@@ -1,4 +1,4 @@
 export const environment = {
   produccion: true,
-  apiUrl: 'http://localhost:3001',
+  apiUrl: 'https://tallerpro-api.onrender.com',
 };
