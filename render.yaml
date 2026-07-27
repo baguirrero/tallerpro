@@ -9,7 +9,7 @@ services:
     startCommand: npm run start:prod
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: DATABASE_URL
         fromDatabase:
           name: tallerpro-db
@@ -25,8 +25,11 @@ services:
     name: tallerpro-web
     runtime: static
     rootDir: frontend
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: dist/frontend/browser
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
     routes:
       - type: rewrite
         source: /*
