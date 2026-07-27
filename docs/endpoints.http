@@ -1,0 +1,172 @@
+### Colección de endpoints de TallerPro
+### Se puede ejecutar con la extensión REST Client de VS Code.
+### Primero se hace login y se pega el access_token en la variable @token.
+
+@api = http://localhost:3001
+@token = PEGAR_AQUI_EL_TOKEN
+
+### ─────────────── AUTENTICACIÓN ───────────────
+
+### Iniciar sesión
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "jefe@taller.com", "password": "123456" }
+
+### Registrar un usuario nuevo (entra con rol Mecánico)
+POST {{api}}/auth/registro
+Content-Type: application/json
+
+{
+  "username": "nuevo",
+  "email": "nuevo@taller.com",
+  "password": "123456",
+  "nombres": "Nuevo",
+  "apellidos": "Usuario"
+}
+
+### Cambiar la propia contraseña
+PATCH {{api}}/auth/cambiar-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "passwordActual": "123456", "passwordNueva": "nueva123" }
+
+### ─────────────── USUARIOS ───────────────
+
+### Listar todos (solo Administrador)
+GET {{api}}/usuarios
+Authorization: Bearer {{token}}
+
+### Listar mecánicos (para asignar trabajos)
+GET {{api}}/usuarios/mecanicos
+Authorization: Bearer {{token}}
+
+### Activar o desactivar un usuario (solo Administrador)
+PATCH {{api}}/usuarios/ID_DEL_USUARIO/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "activo": false }
+
+### ─────────────── ÓRDENES ───────────────
+
+### Listar todas
+GET {{api}}/ordenes
+Authorization: Bearer {{token}}
+
+### Filtrar por estado
+GET {{api}}/ordenes?estado=RECIBIDA
+Authorization: Bearer {{token}}
+
+### Estadísticas: conteo por estado con QueryBuilder y GROUP BY
+GET {{api}}/ordenes/estadisticas
+Authorization: Bearer {{token}}
+
+### Ver una orden
+GET {{api}}/ordenes/ID_DE_LA_ORDEN
+Authorization: Bearer {{token}}
+
+### Crear una orden (Administrador, Jefe de Taller o Asesor)
+POST {{api}}/ordenes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "descripcion": "Cambio de aceite y revisión de frenos",
+  "presupuesto": 450.50,
+  "fecha_ingreso": "2026-07-27",
+  "fecha_entrega": "2026-07-29",
+  "placa": "ABC-123",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2019,
+  "cliente_nombre": "Juan Pérez",
+  "cliente_telefono": "987654321"
+}
+
+### Actualizar una orden o cambiar su estado
+PATCH {{api}}/ordenes/ID_DE_LA_ORDEN
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "estado": "EN_PROCESO" }
+
+### Eliminar una orden (solo Administrador)
+DELETE {{api}}/ordenes/ID_DE_LA_ORDEN
+Authorization: Bearer {{token}}
+
+### ─────────────── TRABAJOS ───────────────
+
+### Trabajos de una orden (alimentan el tablero Kanban)
+GET {{api}}/trabajos/orden/ID_DE_LA_ORDEN
+Authorization: Bearer {{token}}
+
+### Los trabajos asignados a quien tiene la sesión abierta
+GET {{api}}/trabajos/mis-trabajos
+Authorization: Bearer {{token}}
+
+### Crear y asignar un trabajo (Administrador o Jefe de Taller)
+POST {{api}}/trabajos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "titulo": "Cambiar pastillas de freno",
+  "descripcion": "Pastillas delanteras, juego completo",
+  "prioridad": "ALTA",
+  "fecha_limite": "2026-07-28",
+  "orden_id": "ID_DE_LA_ORDEN",
+  "asignado_a_id": "ID_DEL_MECANICO"
+}
+
+### Cambiar el estado (solo el mecánico asignado, el admin o el jefe)
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "estado": "EN_PROCESO" }
+
+### Editar un trabajo
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "prioridad": "MEDIA" }
+
+### Eliminar un trabajo
+DELETE {{api}}/trabajos/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+
+### ─────────────── COMENTARIOS ───────────────
+
+### Comentarios de un trabajo, ordenados por fecha
+GET {{api}}/comentarios/trabajo/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+
+### Agregar un comentario
+POST {{api}}/comentarios/trabajo/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "contenido": "Ya se desmontó la rueda, faltan las pastillas nuevas" }
+
+### ─────────────── ADJUNTOS ───────────────
+
+### Archivos de un trabajo
+GET {{api}}/adjuntos/trabajo/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+
+### Subir un archivo (JPG, PNG o PDF, máximo 5 MB)
+### El cuerpo va como multipart/form-data con el campo "archivo".
+### Desde la terminal:
+###   curl -X POST http://localhost:3001/adjuntos/trabajo/ID_DEL_TRABAJO \
+###        -H "Authorization: Bearer TOKEN" \
+###        -F "archivo=@/ruta/a/la/foto.png"
+
+### Eliminar un archivo (Administrador o Jefe de Taller)
+DELETE {{api}}/adjuntos/ID_DEL_ADJUNTO
+Authorization: Bearer {{token}}
+
+### Los archivos se abren directamente por su URL:
+### GET {{api}}/uploads/NOMBRE_GENERADO.png
