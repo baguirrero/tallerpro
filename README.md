@@ -112,6 +112,29 @@ Usé el 3001 y el 5434 porque tenía el 3000 y el 5432 ocupados con otros
 proyectos. Si a ti no te pasa, los cambias en el `.env` y en el `apiUrl` de
 `frontend/src/environments/`.
 
+## Despliegue
+
+La aplicación está publicada en Render, en el plan gratuito:
+
+- Aplicación: https://tallerpro-web-36wx.onrender.com
+- API: https://tallerpro-api-19r0.onrender.com
+
+Los tres servicios (base de datos, API y sitio estático) están descritos en
+`render.yaml`, así que se recrean conectando el repositorio como Blueprint sin
+configurar nada a mano.
+
+Tres cosas que conviene saber del plan gratuito. La primera es que el servicio
+se duerme cuando pasa un rato sin tráfico, y la primera visita después tarda
+cerca de un minuto en responder. La segunda es que el disco es efímero: los
+archivos adjuntos se suben y se ven bien, pero se borran en cada despliegue o
+reinicio, y los discos persistentes no están disponibles en este plan. Lo que
+sí sobrevive es todo lo que está en PostgreSQL, que es el resto de la
+aplicación. La tercera es que las bases de datos gratuitas de Render expiran a
+los 30 días de creadas.
+
+En producción no se usan los valores del `.env.example`: la conexión a la base
+llega en `DATABASE_URL` y el `JWT_SECRET` lo genera Render.
+
 ## Notas técnicas
 
 Hay varias cosas del código que no se entienden a simple vista y prefiero
