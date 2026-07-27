@@ -1,0 +1,45 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" routerLink="/dashboard">🔧 TallerPro</a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#menuPrincipal"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="menuPrincipal">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/ordenes" routerLinkActive="active">Órdenes</a>
+        </li>
+        @if (puedeCrearOrdenes()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/ordenes/nueva" routerLinkActive="active">
+              Nueva orden
+            </a>
+          </li>
+        }
+        @if (esAdministrador()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+          </li>
+        }
+      </ul>
+
+      <div class="d-flex align-items-center text-white">
+        <div class="text-end me-3">
+          <div class="small fw-semibold">{{ tokenService.nombreCompleto() }}</div>
+          <div class="small opacity-75">{{ tokenService.rolPrincipal() }}</div>
+        </div>
+        <button class="btn btn-outline-light btn-sm" (click)="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+  </div>
+</nav>

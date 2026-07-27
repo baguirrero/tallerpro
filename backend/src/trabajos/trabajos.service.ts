@@ -18,7 +18,7 @@ export class TrabajosService {
       titulo: dto.titulo,
       descripcion: dto.descripcion,
       prioridad: dto.prioridad,
-      fecha_limite: dto.fecha_limite ? new Date(dto.fecha_limite) : undefined,
+      fecha_limite: dto.fecha_limite,
       orden: { id: dto.orden_id } as any,
       asignado_a: dto.asignado_a_id ? ({ id: dto.asignado_a_id } as any) : undefined,
       creado_por: { id: usuarioId } as any,
@@ -80,7 +80,7 @@ export class TrabajosService {
     if (dto.titulo !== undefined) trabajo.titulo = dto.titulo;
     if (dto.descripcion !== undefined) trabajo.descripcion = dto.descripcion;
     if (dto.prioridad !== undefined) trabajo.prioridad = dto.prioridad;
-    if (dto.fecha_limite !== undefined) trabajo.fecha_limite = new Date(dto.fecha_limite);
+    if (dto.fecha_limite !== undefined) trabajo.fecha_limite = dto.fecha_limite;
     if (dto.asignado_a_id !== undefined) {
       trabajo.asignado_a = { id: dto.asignado_a_id } as any;
     }

@@ -32,7 +32,7 @@ export class Trabajo {
   estado!: string;
 
   @Column({ type: 'date', nullable: true })
-  fecha_limite?: Date;
+  fecha_limite?: string;
 
   @ManyToOne(() => Orden, (orden) => orden.trabajos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'orden_id' })

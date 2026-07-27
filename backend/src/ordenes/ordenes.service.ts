@@ -15,8 +15,6 @@ export class OrdenesService {
   async crear(dto: CrearOrdenDto, usuarioId: string) {
     const nuevaOrden = this.ordenRepository.create({
       ...dto,
-      fecha_ingreso: new Date(dto.fecha_ingreso),
-      fecha_entrega: dto.fecha_entrega ? new Date(dto.fecha_entrega) : undefined,
       numero_orden: await this.generarNumeroOrden(),
       creado_por: { id: usuarioId } as any,
     });
@@ -65,8 +63,6 @@ export class OrdenesService {
     const orden = await this.obtenerPorId(id);
 
     Object.assign(orden, dto);
-    if (dto.fecha_ingreso) orden.fecha_ingreso = new Date(dto.fecha_ingreso);
-    if (dto.fecha_entrega) orden.fecha_entrega = new Date(dto.fecha_entrega);
 
     return await this.ordenRepository.save(orden);
   }

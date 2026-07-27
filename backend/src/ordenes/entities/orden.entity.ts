@@ -27,10 +27,10 @@ export class Orden {
   presupuesto?: number;
 
   @Column({ type: 'date' })
-  fecha_ingreso!: Date;
+  fecha_ingreso!: string;
 
   @Column({ type: 'date', nullable: true })
-  fecha_entrega?: Date;
+  fecha_entrega?: string;
 
   @Column({ type: 'varchar', length: 20, default: EstadoOrden.RECIBIDA })
   estado!: string;
