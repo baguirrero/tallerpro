@@ -7,6 +7,10 @@ import { join } from 'path';
 import { RolesModule } from './roles/roles.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
+import { OrdenesModule } from './ordenes/ordenes.module';
+import { TrabajosModule } from './trabajos/trabajos.module';
+import { ComentariosModule } from './comentarios/comentarios.module';
+import { AdjuntosModule } from './adjuntos/adjuntos.module';
 import { SeedModule } from './seed/seed.module';
 
 @Module({
@@ -38,6 +42,10 @@ import { SeedModule } from './seed/seed.module';
     RolesModule,
     UsuariosModule,
     AuthModule,
+    OrdenesModule,
+    TrabajosModule,
+    ComentariosModule,
+    AdjuntosModule,
     SeedModule,
   ],
 })
