@@ -1,0 +1,79 @@
+@if (mensajeError()) {
+  <div class="alert alert-danger">{{ mensajeError() }}</div>
+}
+
+@if (cargando()) {
+  <app-spinner></app-spinner>
+} @else {
+  <div class="row g-3">
+    @for (columna of columnas; track columna) {
+      <div class="col-md-4">
+        <div class="columna-kanban">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">{{ etiquetas[columna] }}</h6>
+            <span class="badge text-bg-secondary">{{ trabajosDeColumna(columna).length }}</span>
+          </div>
+
+          @if (trabajosDeColumna(columna).length === 0) {
+            <p class="text-muted small text-center my-4">Sin trabajos</p>
+          }
+
+          @for (trabajo of trabajosDeColumna(columna); track trabajo.id) {
+            <div class="card mb-2 shadow-sm tarjeta-trabajo">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="card-title mb-0">{{ trabajo.titulo }}</h6>
+                  <app-badge-estado [estado]="trabajo.prioridad"></app-badge-estado>
+                </div>
+
+                @if (trabajo.descripcion) {
+                  <p class="small text-muted mb-2">{{ trabajo.descripcion }}</p>
+                }
+
+                <div class="small mb-2">
+                  <div>
+                    <strong>Mecánico:</strong>
+                    {{ trabajo.asignado_a
+                        ? trabajo.asignado_a.nombres + ' ' + trabajo.asignado_a.apellidos
+                        : 'Sin asignar' }}
+                  </div>
+                  @if (trabajo.fecha_limite) {
+                    <div>
+                      <strong>Límite:</strong>
+                      {{ trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC' }}
+                    </div>
+                  }
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="btn-group btn-group-sm">
+                    <button
+                      class="btn btn-outline-secondary"
+                      [disabled]="!puedeMover(trabajo) || !hayColumnaAnterior(trabajo)"
+                      (click)="mover(trabajo, -1)"
+                      title="Mover a la columna anterior"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      [disabled]="!puedeMover(trabajo) || !hayColumnaSiguiente(trabajo)"
+                      (click)="mover(trabajo, 1)"
+                      title="Mover a la columna siguiente"
+                    >
+                      ▶
+                    </button>
+                  </div>
+
+                  <button class="btn btn-sm btn-outline-primary" (click)="seleccionar(trabajo)">
+                    Detalle
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

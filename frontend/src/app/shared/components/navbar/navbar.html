@@ -34,10 +34,11 @@
       </ul>
 
       <div class="d-flex align-items-center text-white">
-        <div class="text-end me-3">
+        <a class="text-end me-3 text-white text-decoration-none" routerLink="/perfil/password"
+           title="Cambiar contraseña">
           <div class="small fw-semibold">{{ tokenService.nombreCompleto() }}</div>
           <div class="small opacity-75">{{ tokenService.rolPrincipal() }}</div>
-        </div>
+        </a>
         <button class="btn btn-outline-light btn-sm" (click)="cerrarSesion()">Salir</button>
       </div>
     </div>

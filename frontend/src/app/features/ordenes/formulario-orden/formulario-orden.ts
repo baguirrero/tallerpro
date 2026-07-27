@@ -111,12 +111,12 @@ export class FormularioOrden implements OnInit {
     if (id) {
       datos.estado = valores.estado;
       this.ordenService.actualizar(id, datos).subscribe({
-        next: () => this.router.navigate(['/ordenes']),
+        next: () => this.router.navigate(['/ordenes', id]),
         error: (error) => this.manejarError(error),
       });
     } else {
       this.ordenService.crear(datos).subscribe({
-        next: () => this.router.navigate(['/ordenes']),
+        next: (orden) => this.router.navigate(['/ordenes', orden.id]),
         error: (error) => this.manejarError(error),
       });
     }

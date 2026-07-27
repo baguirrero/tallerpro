@@ -23,6 +23,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard').then((c) => c.Dashboard),
   },
   {
+    path: 'perfil/password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/perfil/cambiar-password/cambiar-password').then((c) => c.CambiarPassword),
+  },
+  {
     path: 'ordenes',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -41,6 +47,19 @@ export const routes: Routes = [
     data: { roles: [ROLES.ADMINISTRADOR, ROLES.JEFE_TALLER, ROLES.ASESOR] },
     loadComponent: () =>
       import('./features/ordenes/formulario-orden/formulario-orden').then((c) => c.FormularioOrden),
+  },
+  {
+    path: 'ordenes/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/ordenes/detalle-orden/detalle-orden').then((c) => c.DetalleOrden),
+  },
+  {
+    path: 'usuarios',
+    canActivate: [authGuard, rolesGuard],
+    data: { roles: [ROLES.ADMINISTRADOR] },
+    loadComponent: () =>
+      import('./features/usuarios/lista-usuarios/lista-usuarios').then((c) => c.ListaUsuarios),
   },
   {
     path: '**',

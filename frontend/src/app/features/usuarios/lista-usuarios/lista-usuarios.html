@@ -1,0 +1,55 @@
+<h3 class="mb-3">Usuarios del sistema</h3>
+
+@if (mensajeError()) {
+  <div class="alert alert-danger">{{ mensajeError() }}</div>
+}
+
+@if (cargando()) {
+  <app-spinner></app-spinner>
+} @else {
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre completo</th>
+            <th>Correo</th>
+            <th>Roles</th>
+            <th>Registro</th>
+            <th>Estado</th>
+            <th class="text-end">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of usuarios(); track usuario.id) {
+            <tr>
+              <td class="fw-semibold">{{ usuario.username }}</td>
+              <td>{{ usuario.nombres }} {{ usuario.apellidos }}</td>
+              <td>{{ usuario.email }}</td>
+              <td>{{ nombresRoles(usuario) }}</td>
+              <td>{{ usuario.created_at | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                @if (usuario.activo) {
+                  <span class="badge text-bg-success">Activo</span>
+                } @else {
+                  <span class="badge text-bg-danger">Inactivo</span>
+                }
+              </td>
+              <td class="text-end">
+                <button
+                  class="btn btn-sm"
+                  [class.btn-outline-danger]="usuario.activo"
+                  [class.btn-outline-success]="!usuario.activo"
+                  (click)="cambiarEstado(usuario)"
+                >
+                  {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
