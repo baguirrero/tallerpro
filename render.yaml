@@ -19,7 +19,7 @@ services:
       - key: JWT_EXPIRES_IN
         value: "7200"
       - key: CORS_ORIGIN
-        value: https://tallerpro-web.onrender.com
+        value: https://tallerpro-web-36wx.onrender.com
 
   - type: web
     name: tallerpro-web
