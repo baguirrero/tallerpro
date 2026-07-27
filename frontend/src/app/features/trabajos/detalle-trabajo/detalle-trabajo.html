@@ -1,0 +1,93 @@
+<div class="card shadow-sm">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">{{ trabajo().titulo }}</span>
+      <app-badge-estado [estado]="trabajo().estado"></app-badge-estado>
+    </div>
+  </div>
+
+  <div class="card-body">
+    @if (mensajeError()) {
+      <div class="alert alert-danger">{{ mensajeError() }}</div>
+    }
+
+    <h6 class="text-muted">Comentarios ({{ comentarios().length }})</h6>
+
+    @if (comentarios().length === 0) {
+      <p class="text-muted small">Todavía no hay comentarios en este trabajo.</p>
+    } @else {
+      <div class="mb-3">
+        @for (comentario of comentarios(); track comentario.id) {
+          <div class="border-start border-3 border-primary ps-3 py-2 mb-2 bg-light rounded">
+            <div class="d-flex justify-content-between">
+              <strong class="small">
+                {{ comentario.usuario.nombres }} {{ comentario.usuario.apellidos }}
+              </strong>
+              <small class="text-muted">
+                {{ comentario.created_at | date: 'dd/MM/yyyy HH:mm' }}
+              </small>
+            </div>
+            <div class="small">{{ comentario.contenido }}</div>
+          </div>
+        }
+      </div>
+    }
+
+    <form [formGroup]="formularioComentario" (ngSubmit)="enviarComentario()" class="mb-4">
+      <div class="input-group">
+        <input type="text" class="form-control" formControlName="contenido"
+               placeholder="Escriba un comentario..." />
+        <button type="submit" class="btn btn-primary" [disabled]="enviandoComentario()">
+          @if (enviandoComentario()) {
+            <span class="spinner-border spinner-border-sm"></span>
+          } @else {
+            Comentar
+          }
+        </button>
+      </div>
+    </form>
+
+    <hr />
+
+    <h6 class="text-muted">Archivos adjuntos ({{ adjuntos().length }})</h6>
+
+    @if (adjuntos().length === 0) {
+      <p class="text-muted small">No hay archivos adjuntos.</p>
+    } @else {
+      <ul class="list-group mb-3">
+        @for (adjunto of adjuntos(); track adjunto.id) {
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a [href]="obtenerUrl(adjunto)" target="_blank" rel="noopener">
+                {{ adjunto.nombre_original }}
+              </a>
+              <div class="small text-muted">
+                {{ formatearTamano(adjunto.tamano) }} ·
+                subido por {{ adjunto.subido_por.nombres }} ·
+                {{ adjunto.created_at | date: 'dd/MM/yyyy' }}
+              </div>
+            </div>
+            @if (puedeEliminarAdjuntos()) {
+              <button class="btn btn-sm btn-outline-danger" (click)="eliminarAdjunto(adjunto)">
+                Eliminar
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="input-group">
+      <input type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf"
+             (change)="seleccionarArchivo($event)" />
+      <button class="btn btn-outline-primary" (click)="subirArchivo()" [disabled]="subiendoArchivo()">
+        @if (subiendoArchivo()) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else {
+          Subir
+        }
+      </button>
+    </div>
+    <small class="text-muted">Formatos permitidos: JPG, PNG y PDF. Máximo 5 MB.</small>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+
+body {
+  background-color: #f4f6f9;
+}
+
+.columna-kanban {
+  min-height: 400px;
+  background-color: #eef1f5;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.tarjeta-trabajo {
+  cursor: default;
+}

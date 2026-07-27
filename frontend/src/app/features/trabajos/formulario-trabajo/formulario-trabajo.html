@@ -1,0 +1,68 @@
+<div class="card shadow-sm mb-4">
+  <div class="card-header">
+    <span class="fw-semibold">Agregar trabajo a esta orden</span>
+  </div>
+
+  <div class="card-body">
+    @if (mensajeError()) {
+      <div class="alert alert-danger">{{ mensajeError() }}</div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="enviar()">
+      <div class="row">
+        <div class="col-md-5 mb-3">
+          <label class="form-label" for="titulo">Título del trabajo</label>
+          <input id="titulo" type="text" class="form-control" formControlName="titulo"
+                 placeholder="Ej. Cambio de pastillas de freno" />
+          @if (tieneError('titulo', 'required')) {
+            <small class="text-danger">El título es obligatorio</small>
+          }
+          @if (tieneError('titulo', 'minlength')) {
+            <small class="text-danger">Debe tener al menos 4 caracteres</small>
+          }
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label class="form-label" for="prioridad">Prioridad</label>
+          <select id="prioridad" class="form-select" formControlName="prioridad">
+            @for (prioridad of prioridades; track prioridad) {
+              <option [value]="prioridad">{{ prioridad }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label" for="asignado">Asignar a</label>
+          <select id="asignado" class="form-select" formControlName="asignado_a_id">
+            <option value="">Sin asignar</option>
+            @for (mecanico of mecanicos(); track mecanico.id) {
+              <option [value]="mecanico.id">{{ mecanico.nombres }} {{ mecanico.apellidos }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8 mb-3">
+          <label class="form-label" for="descripcion_trabajo">Descripción (opcional)</label>
+          <input id="descripcion_trabajo" type="text" class="form-control"
+                 formControlName="descripcion" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label class="form-label" for="fecha_limite">Fecha límite (opcional)</label>
+          <input id="fecha_limite" type="date" class="form-control" formControlName="fecha_limite" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success" [disabled]="guardando()">
+        @if (guardando()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Guardando...
+        } @else {
+          Agregar trabajo
+        }
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+@if (mensajeError()) {
+  <div class="alert alert-danger">{{ mensajeError() }}</div>
+  <a class="btn btn-outline-secondary" routerLink="/ordenes">Volver al listado</a>
+}
+
+@if (cargando()) {
+  <app-spinner></app-spinner>
+} @else if (orden(); as datosOrden) {
+  <div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <span class="fw-bold fs-5">{{ datosOrden.numero_orden }}</span>
+        <app-badge-estado class="ms-2" [estado]="datosOrden.estado"></app-badge-estado>
+      </div>
+      <div>
+        <a class="btn btn-sm btn-outline-secondary" routerLink="/ordenes">Volver</a>
+        @if (puedeEditar()) {
+          <a class="btn btn-sm btn-outline-primary ms-1"
+             [routerLink]="['/ordenes', datosOrden.id, 'editar']">
+            Editar orden
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <h6 class="text-muted">Vehículo</h6>
+          <p class="mb-1"><strong>{{ datosOrden.marca }} {{ datosOrden.modelo }}</strong></p>
+          <p class="mb-1">Placa: {{ datosOrden.placa }}</p>
+          <p class="mb-0">Año: {{ datosOrden.anio ?? '—' }}</p>
+        </div>
+
+        <div class="col-md-4">
+          <h6 class="text-muted">Cliente</h6>
+          <p class="mb-1">{{ datosOrden.cliente_nombre }}</p>
+          <p class="mb-0">Teléfono: {{ datosOrden.cliente_telefono }}</p>
+        </div>
+
+        <div class="col-md-4">
+          <h6 class="text-muted">Servicio</h6>
+          <p class="mb-1">
+            Presupuesto:
+            <strong>
+              {{ datosOrden.presupuesto
+                  ? (datosOrden.presupuesto | currency: 'PEN' : 'symbol-narrow')
+                  : 'No definido' }}
+            </strong>
+          </p>
+          <p class="mb-1">Ingreso: {{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</p>
+          <p class="mb-0">
+            Entrega:
+            {{ datosOrden.fecha_entrega
+                ? (datosOrden.fecha_entrega | date: 'dd/MM/yyyy' : 'UTC')
+                : 'Por definir' }}
+          </p>
+        </div>
+      </div>
+
+      <hr />
+      <h6 class="text-muted">Descripción</h6>
+      <p class="mb-0">{{ datosOrden.descripcion }}</p>
+    </div>
+  </div>
+
+  @if (puedeCrearTrabajos()) {
+    <app-formulario-trabajo
+      [ordenId]="datosOrden.id"
+      (trabajoCreado)="alCrearTrabajo()"
+    ></app-formulario-trabajo>
+  }
+
+  <h5 class="mb-3">Trabajos de la orden</h5>
+  <app-tablero-kanban
+    [ordenId]="datosOrden.id"
+    (trabajoSeleccionado)="alSeleccionarTrabajo($event)"
+  ></app-tablero-kanban>
+
+  @if (trabajoSeleccionado(); as trabajo) {
+    <div class="mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">Detalle del trabajo</h5>
+        <button class="btn btn-sm btn-outline-secondary" (click)="cerrarDetalleTrabajo()">
+          Cerrar
+        </button>
+      </div>
+      <app-detalle-trabajo [trabajo]="trabajo"></app-detalle-trabajo>
+    </div>
+  }
+}

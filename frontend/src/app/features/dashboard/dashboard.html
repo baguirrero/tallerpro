@@ -1,0 +1,87 @@
+<h3 class="mb-1">Hola, {{ tokenService.nombreCompleto() }}</h3>
+<p class="text-muted">Resumen del taller</p>
+
+@if (mensajeError()) {
+  <div class="alert alert-danger">{{ mensajeError() }}</div>
+}
+
+@if (cargando()) {
+  <app-spinner></app-spinner>
+} @else if (estadisticas(); as datos) {
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card text-bg-primary shadow-sm">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ datos.total }}</h2>
+          <div>Órdenes totales</div>
+        </div>
+      </div>
+    </div>
+
+    @for (fila of datos.porEstado; track fila.estado) {
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <h2 class="mb-0">{{ fila.cantidad }}</h2>
+            <div class="text-muted">{{ obtenerEtiqueta(fila.estado) }}</div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">Mis trabajos asignados</span>
+    <span class="badge text-bg-secondary">{{ misTrabajos().length }}</span>
+  </div>
+
+  <div class="card-body">
+    @if (misTrabajos().length === 0) {
+      <p class="text-muted mb-0">No tiene trabajos asignados en este momento.</p>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Trabajo</th>
+              <th>Vehículo</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Fecha límite</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (trabajo of misTrabajos(); track trabajo.id) {
+              <tr>
+                <td>{{ trabajo.titulo }}</td>
+                <td>
+                  @if (trabajo.orden; as orden) {
+                    <span class="fw-semibold">{{ orden.numero_orden }}</span>
+                    <div class="small text-muted">
+                      {{ orden.marca }} {{ orden.modelo }} · {{ orden.placa }}
+                    </div>
+                  }
+                </td>
+                <td><app-badge-estado [estado]="trabajo.prioridad"></app-badge-estado></td>
+                <td><app-badge-estado [estado]="trabajo.estado"></app-badge-estado></td>
+                <td>
+                  {{ trabajo.fecha_limite ? (trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC') : '—' }}
+                </td>
+                <td>
+                  @if (trabajo.orden; as orden) {
+                    <a class="btn btn-sm btn-outline-primary" [routerLink]="['/ordenes', orden.id]">
+                      Ver orden
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
