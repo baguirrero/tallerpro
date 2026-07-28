@@ -23,7 +23,16 @@ export class Orden {
   @Column({ type: 'text' })
   descripcion!: string;
 
-  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (valor?: number) => valor,
+      from: (valor?: string) => (valor == null ? valor : Number(valor)),
+    },
+  })
   presupuesto?: number;
 
   @Column({ type: 'date' })
