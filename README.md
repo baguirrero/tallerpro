@@ -147,6 +147,13 @@ Las columnas `date` están tipadas como `string`, no como `Date`. Al principio
 las guardaba como `Date` y las fechas salían un día antes: `new Date('2026-07-27')`
 es medianoche UTC y en la zona horaria de Perú eso retrocede al día anterior.
 
+El presupuesto lleva un `transformer` en su columna, y es la misma trampa vista
+por otro lado. Las columnas `numeric` de PostgreSQL vuelven del driver como
+texto, para no perder precisión, así que la API devolvía `"680.50"` aunque la
+entidad lo declarara como `number`. Al editar una orden, el formulario recibía
+ese texto y lo reenviaba tal cual si no se retipeaba el campo, y la validación
+lo rechazaba por no ser un número. El `transformer` lo convierte al leer.
+
 La validación de los archivos que se suben está en el `fileFilter` de Multer. Lo
 intenté primero con `FileTypeValidator` y siempre fallaba, porque necesita el
 buffer del archivo y con `diskStorage` este se escribe directo en disco. El
