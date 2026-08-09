@@ -6,23 +6,20 @@ import { Esqueleto } from '../../shared/ui/esqueleto';
 import { EstadoVacio } from '../../shared/ui/estado-vacio';
 import { Modal } from '../../shared/ui/modal';
 import { Pastilla } from '../../shared/ui/pastilla';
+import { Prioridad } from '../../shared/ui/prioridad';
 import { Select } from '../../shared/ui/select';
 import { Tarjeta } from '../../shared/ui/tarjeta';
 import { ToastService } from '../../shared/ui/toast';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [Boton, Campo, Confirmar, Esqueleto, EstadoVacio, Modal, Pastilla, Select, Tarjeta],
+  imports: [
+    Boton, Campo, Confirmar, Esqueleto, EstadoVacio, Modal, Pastilla, Prioridad, Select, Tarjeta,
+  ],
   templateUrl: './catalogo.html',
   styles: `
     .grupo { margin-bottom: var(--e8); }
     .muestra { display: flex; flex-wrap: wrap; gap: var(--e3); align-items: center; }
-    .punto {
-      width: 8px;
-      height: 8px;
-      border-radius: var(--r-full);
-      display: inline-block;
-    }
   `,
 })
 export class Catalogo {
