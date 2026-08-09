@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Orden } from './entities/orden.entity';
 import { CrearOrdenDto } from './dto/crear-orden.dto';
 import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
+import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
 
 @Injectable()
 export class OrdenesService {
@@ -93,8 +94,10 @@ export class OrdenesService {
   }
 
   private async generarNumeroOrden(): Promise<string> {
-    const cantidad = await this.ordenRepository.count();
-    const correlativo = (cantidad + 1).toString().padStart(4, '0');
-    return `ORD-${correlativo}`;
+    const filas: Array<{ nextval: string }> =
+      await this.ordenRepository.manager.query(
+        `SELECT nextval('${SECUENCIA_NUMERO_ORDEN}') AS nextval`,
+      );
+    return formatearNumeroOrden(Number(filas[0].nextval));
   }
 }
