@@ -13,6 +13,7 @@ import { ActualizarTrabajoDto } from './dto/actualizar-trabajo.dto';
 import { EstadoTrabajo, NombreRol } from '../common/enums/estados.enum';
 import { Orden } from '../ordenes/entities/orden.entity';
 import { derivarEstado, esTerminal } from '../ordenes/estado-orden';
+import { transicionValida } from './transiciones';
 import { subtotalTrabajo } from '../ordenes/totales';
 import { DecisionDto } from '../ordenes/dto/registrar-aprobacion.dto';
 import { AdjuntosService } from '../adjuntos/adjuntos.service';
@@ -105,6 +106,7 @@ export class TrabajosService {
         fecha_limite: true,
         precio_mano_obra: true,
         aprobado: true,
+        motivo_espera: true,
         created_at: true,
         asignado_a: { id: true, username: true, nombres: true, apellidos: true },
         creado_por: { id: true, username: true },
@@ -127,6 +129,7 @@ export class TrabajosService {
         titulo: true,
         prioridad: true,
         estado: true,
+        motivo_espera: true,
         fecha_limite: true,
         orden: {
           id: true,
@@ -214,6 +217,7 @@ export class TrabajosService {
     estado: EstadoTrabajo,
     usuarioId: string,
     rolesUsuario: string[],
+    motivoEspera?: string,
   ) {
     const trabajo = await this.obtenerPorId(id);
 
@@ -246,7 +250,31 @@ export class TrabajosService {
         );
       }
 
+      // Va después de los permisos a propósito: a quien no puede tocar el
+      // trabajo no se le explica por qué esa transición sería ilegal.
+      if (!transicionValida(actual.estado, estado)) {
+        const salida =
+          actual.estado === EstadoTrabajo.ESPERANDO_REPUESTO
+            ? ': primero indíquelo como retomado'
+            : '';
+        throw new ConflictException(
+          `El trabajo "${actual.titulo}" está ${actual.estado} y no puede pasar a ${estado}${salida}`,
+        );
+      }
+
+      if (estado !== EstadoTrabajo.ESPERANDO_REPUESTO && motivoEspera != null) {
+        throw new BadRequestException(
+          'El motivo solo corresponde al mandar el trabajo a la espera',
+        );
+      }
+
       actual.estado = estado;
+      // La invariante que sostiene el CHECK de la base: el motivo existe
+      // mientras y solo mientras el trabajo espera una pieza. El `null` es
+      // explícito porque TypeORM ignora las propiedades en `undefined`.
+      actual.motivo_espera =
+        estado === EstadoTrabajo.ESPERANDO_REPUESTO ? motivoEspera : null;
+
       return await manager.save(actual);
     });
   }
