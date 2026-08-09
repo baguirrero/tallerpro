@@ -58,7 +58,7 @@
               </td>
               <td>{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</td>
               <td>
-                {{ orden.presupuesto ? (orden.presupuesto | currency: 'PEN' : 'symbol-narrow') : '—' }}
+                <span class="text-muted">—</span>
               </td>
               <td><app-badge-estado [estado]="orden.estado"></app-badge-estado></td>
               <td class="text-end">

@@ -13,7 +13,6 @@ export interface OrdenDelHistorial {
   numero_orden: string;
   descripcion: string;
   estado: string;
-  presupuesto?: number;
   fecha_ingreso: string;
   fecha_entrega?: string;
 }

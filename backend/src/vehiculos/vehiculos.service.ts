@@ -55,7 +55,6 @@ export class VehiculosService {
         numero_orden: true,
         descripcion: true,
         estado: true,
-        presupuesto: true,
         fecha_ingreso: true,
         fecha_entrega: true,
       },

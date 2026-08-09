@@ -31,7 +31,6 @@ export class FormularioOrden implements OnInit {
 
   readonly formulario = this.fb.nonNullable.group({
     descripcion: ['', [Validators.required, Validators.minLength(5)]],
-    presupuesto: [0, [Validators.min(0)]],
     fecha_ingreso: ['', [Validators.required]],
     fecha_entrega: [''],
     placa: ['', [Validators.required, Validators.minLength(6)]],
@@ -97,7 +96,6 @@ export class FormularioOrden implements OnInit {
       next: (orden) => {
         this.formulario.patchValue({
           descripcion: orden.descripcion,
-          presupuesto: orden.presupuesto ?? 0,
           fecha_ingreso: orden.fecha_ingreso?.substring(0, 10) ?? '',
           fecha_entrega: orden.fecha_entrega?.substring(0, 10) ?? '',
           placa: orden.vehiculo.placa,
@@ -137,7 +135,6 @@ export class FormularioOrden implements OnInit {
       propietario_telefono: valores.propietario_telefono,
     };
     if (actualizarVehiculo) datos.actualizar_vehiculo = true;
-    if (valores.presupuesto > 0) datos.presupuesto = valores.presupuesto;
     if (valores.fecha_entrega) datos.fecha_entrega = valores.fecha_entrega;
     if (valores.anio) datos.anio = valores.anio;
 

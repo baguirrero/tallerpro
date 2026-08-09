@@ -5,7 +5,6 @@ export interface Orden {
   id: string;
   numero_orden: string;
   descripcion: string;
-  presupuesto?: number;
   fecha_ingreso: string;
   fecha_entrega?: string;
   estado: string;
@@ -16,7 +15,6 @@ export interface Orden {
 
 export interface OrdenRequest {
   descripcion: string;
-  presupuesto?: number;
   fecha_ingreso: string;
   fecha_entrega?: string;
   placa: string;

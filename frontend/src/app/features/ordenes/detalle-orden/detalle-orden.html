@@ -60,14 +60,6 @@
 
         <div class="col-md-4">
           <h6 class="text-muted">Servicio</h6>
-          <p class="mb-1">
-            Presupuesto:
-            <strong>
-              {{ datosOrden.presupuesto
-                  ? (datosOrden.presupuesto | currency: 'PEN' : 'symbol-narrow')
-                  : 'No definido' }}
-            </strong>
-          </p>
           <p class="mb-1">Ingreso: {{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</p>
           <p class="mb-0">
             Entrega:

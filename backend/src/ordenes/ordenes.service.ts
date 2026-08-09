@@ -33,7 +33,6 @@ export class OrdenesService {
 
       const nuevaOrden = manager.create(Orden, {
         descripcion: dto.descripcion,
-        presupuesto: dto.presupuesto,
         fecha_ingreso: dto.fecha_ingreso,
         fecha_entrega: dto.fecha_entrega,
         numero_orden: await this.generarNumeroOrden(manager),
@@ -53,7 +52,6 @@ export class OrdenesService {
         id: true,
         numero_orden: true,
         descripcion: true,
-        presupuesto: true,
         fecha_ingreso: true,
         fecha_entrega: true,
         estado: true,
@@ -109,7 +107,6 @@ export class OrdenesService {
       // Campo por campo y no `Object.assign(orden, dto)`: el DTO trae ahora
       // datos del vehículo que no son columnas de la orden.
       if (dto.descripcion !== undefined) orden.descripcion = dto.descripcion;
-      if (dto.presupuesto !== undefined) orden.presupuesto = dto.presupuesto;
       if (dto.fecha_ingreso !== undefined) orden.fecha_ingreso = dto.fecha_ingreso;
       if (dto.fecha_entrega !== undefined) orden.fecha_entrega = dto.fecha_entrega;
 

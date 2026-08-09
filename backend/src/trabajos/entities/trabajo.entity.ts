@@ -12,6 +12,8 @@ import { Orden } from '../../ordenes/entities/orden.entity';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 import { Comentario } from '../../comentarios/entities/comentario.entity';
 import { Adjunto } from '../../adjuntos/entities/adjunto.entity';
+import { Repuesto } from '../../repuestos/entities/repuesto.entity';
+import { numerico } from '../../common/transformers/numerico';
 import { EstadoTrabajo, Prioridad } from '../../common/enums/estados.enum';
 
 @Entity('trabajos')
@@ -34,6 +36,14 @@ export class Trabajo {
   @Column({ type: 'date', nullable: true })
   fecha_limite?: string;
 
+  /** `null` = sin cotizar. `0` es un precio válido: una revisión de cortesía. */
+  @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true, transformer: numerico })
+  precio_mano_obra?: number;
+
+  /** `null` = esperando respuesta · `true` = aprobado · `false` = rechazado. */
+  @Column({ type: 'boolean', nullable: true })
+  aprobado?: boolean;
+
   @ManyToOne(() => Orden, (orden) => orden.trabajos, {
     onDelete: 'CASCADE',
     nullable: false,
@@ -54,6 +64,9 @@ export class Trabajo {
 
   @OneToMany(() => Adjunto, (adjunto) => adjunto.trabajo)
   adjuntos!: Adjunto[];
+
+  @OneToMany(() => Repuesto, (repuesto) => repuesto.trabajo)
+  repuestos!: Repuesto[];
 
   @CreateDateColumn()
   created_at!: Date;
