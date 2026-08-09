@@ -1,3 +1,5 @@
+import { Totales } from './repuesto.model';
+
 export interface Vehiculo {
   id: string;
   placa: string;
@@ -15,6 +17,7 @@ export interface OrdenDelHistorial {
   estado: string;
   fecha_ingreso: string;
   fecha_entrega?: string;
+  totales: Totales;
 }
 
 export interface VehiculoConHistorial extends Vehiculo {

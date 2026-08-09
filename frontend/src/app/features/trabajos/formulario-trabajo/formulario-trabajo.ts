@@ -32,6 +32,7 @@ export class FormularioTrabajo implements OnInit {
     descripcion: [''],
     prioridad: ['MEDIA'],
     fecha_limite: [''],
+    precio_mano_obra: [null as number | null, [Validators.min(0)]],
     asignado_a_id: [''],
   });
 
@@ -62,6 +63,10 @@ export class FormularioTrabajo implements OnInit {
       prioridad: valores.prioridad,
       orden_id: this.ordenId(),
     };
+    // null y undefined son "sin cotizar"; 0 sí es un precio.
+    if (valores.precio_mano_obra !== null && valores.precio_mano_obra !== undefined) {
+      datos.precio_mano_obra = valores.precio_mano_obra;
+    }
     if (valores.descripcion) datos.descripcion = valores.descripcion;
     if (valores.fecha_limite) datos.fecha_limite = valores.fecha_limite;
     if (valores.asignado_a_id) datos.asignado_a_id = valores.asignado_a_id;

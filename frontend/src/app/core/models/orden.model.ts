@@ -1,5 +1,6 @@
 import { Mecanico } from './usuario.model';
 import { Vehiculo } from './vehiculo.model';
+import { Totales } from './repuesto.model';
 
 export interface Orden {
   id: string;
@@ -9,6 +10,7 @@ export interface Orden {
   fecha_entrega?: string;
   estado: string;
   vehiculo: Vehiculo;
+  totales: Totales;
   created_at: string;
   creado_por?: Mecanico;
 }

@@ -1,4 +1,5 @@
 import { Mecanico } from './usuario.model';
+import { Repuesto } from './repuesto.model';
 
 export interface VehiculoResumen {
   id: string;
@@ -20,6 +21,11 @@ export interface Trabajo {
   prioridad: string;
   estado: string;
   fecha_limite?: string;
+  precio_mano_obra?: number;
+  aprobado?: boolean | null;
+  repuestos?: Repuesto[];
+  /** Lo calcula la API: mano de obra más repuestos. */
+  subtotal?: number;
   created_at: string;
   asignado_a?: Mecanico;
   creado_por?: Mecanico;
@@ -33,4 +39,5 @@ export interface TrabajoRequest {
   fecha_limite?: string;
   orden_id: string;
   asignado_a_id?: string;
+  precio_mano_obra?: number;
 }

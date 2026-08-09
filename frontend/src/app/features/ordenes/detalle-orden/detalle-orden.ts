@@ -13,12 +13,13 @@ import { BadgeEstado } from '../../../shared/components/badge-estado/badge-estad
 import { TableroKanban } from '../../trabajos/tablero-kanban/tablero-kanban';
 import { FormularioTrabajo } from '../../trabajos/formulario-trabajo/formulario-trabajo';
 import { DetalleTrabajo } from '../../trabajos/detalle-trabajo/detalle-trabajo';
+import { PanelCotizacion } from '../panel-cotizacion/panel-cotizacion';
 
 @Component({
   selector: 'app-detalle-orden',
   imports: [
     RouterLink, CurrencyPipe, DatePipe, Spinner, BadgeEstado,
-    TableroKanban, FormularioTrabajo, DetalleTrabajo,
+    TableroKanban, FormularioTrabajo, DetalleTrabajo, PanelCotizacion,
   ],
   templateUrl: './detalle-orden.html',
   styles: ``,

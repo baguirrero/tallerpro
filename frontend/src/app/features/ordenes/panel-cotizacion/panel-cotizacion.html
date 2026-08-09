@@ -1,0 +1,100 @@
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Cotización</div>
+
+  <div class="card-body">
+    @if (mensajeError()) {
+      <div class="alert alert-danger">{{ mensajeError() }}</div>
+    }
+
+    @if (trabajos().length === 0) {
+      <p class="text-muted mb-0">Esta orden todavía no tiene trabajos.</p>
+    } @else {
+      @for (trabajo of trabajos(); track trabajo.id) {
+        <div class="border-bottom pb-3 mb-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong>{{ trabajo.titulo }}</strong>
+              @if (!estaCotizado(trabajo)) {
+                <span class="badge bg-secondary ms-2">Sin cotizar</span>
+              } @else if (trabajo.aprobado === true) {
+                <span class="badge bg-success ms-2">Aprobado</span>
+              } @else if (trabajo.aprobado === false) {
+                <span class="badge bg-danger ms-2">Rechazado</span>
+              } @else {
+                <span class="badge bg-warning text-dark ms-2">Esperando respuesta</span>
+              }
+            </div>
+            <strong>{{ trabajo.subtotal | currency: 'PEN' }}</strong>
+          </div>
+
+          @if (estaCotizado(trabajo)) {
+            <div class="small text-muted mt-1">
+              Mano de obra: {{ trabajo.precio_mano_obra | currency: 'PEN' }}
+            </div>
+
+            @for (repuesto of trabajo.repuestos ?? []; track repuesto.id) {
+              <div class="small d-flex justify-content-between mt-1">
+                <span>
+                  {{ repuesto.cantidad }} × {{ repuesto.descripcion }}
+                  ({{ repuesto.precio_unitario | currency: 'PEN' }} c/u)
+                </span>
+                <span>
+                  {{ repuesto.cantidad * repuesto.precio_unitario | currency: 'PEN' }}
+                  @if (puedeCotizar()) {
+                    <button class="btn btn-sm btn-link text-danger p-0 ms-2"
+                            (click)="eliminarRepuesto(repuesto.id)">quitar</button>
+                  }
+                </span>
+              </div>
+            }
+
+            @if (puedeCotizar()) {
+              @if (trabajoEnEdicion() === trabajo.id) {
+                <form class="row g-2 mt-2" [formGroup]="formularioRepuesto"
+                      (ngSubmit)="agregarRepuesto()">
+                  <div class="col-md-6">
+                    <input class="form-control form-control-sm" placeholder="Repuesto"
+                           formControlName="descripcion" />
+                  </div>
+                  <div class="col-md-2">
+                    <input class="form-control form-control-sm" type="number" min="1"
+                           formControlName="cantidad" />
+                  </div>
+                  <div class="col-md-2">
+                    <input class="form-control form-control-sm" type="number" step="0.01" min="0"
+                           formControlName="precio_unitario" />
+                  </div>
+                  <div class="col-md-2 d-flex gap-1">
+                    <button class="btn btn-sm btn-primary" type="submit">Agregar</button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                            (click)="cerrarEditor()">×</button>
+                  </div>
+                </form>
+              } @else {
+                <button class="btn btn-sm btn-outline-primary mt-2"
+                        (click)="abrirEditor(trabajo.id)">
+                  + Repuesto
+                </button>
+              }
+            }
+          }
+        </div>
+      }
+
+      <div class="row text-end">
+        <div class="col">
+          <div class="small text-muted">Aprobado</div>
+          <div class="fw-bold text-success">{{ totales().aprobado | currency: 'PEN' }}</div>
+        </div>
+        <div class="col">
+          <div class="small text-muted">Esperando respuesta</div>
+          <div class="fw-bold">{{ totales().pendiente | currency: 'PEN' }}</div>
+        </div>
+        <div class="col">
+          <div class="small text-muted">Rechazado</div>
+          <div class="fw-bold text-muted">{{ totales().rechazado | currency: 'PEN' }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
