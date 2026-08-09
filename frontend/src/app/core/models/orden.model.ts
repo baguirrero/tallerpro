@@ -1,4 +1,5 @@
 import { Mecanico } from './usuario.model';
+import { Vehiculo } from './vehiculo.model';
 
 export interface Orden {
   id: string;
@@ -8,12 +9,7 @@ export interface Orden {
   fecha_ingreso: string;
   fecha_entrega?: string;
   estado: string;
-  placa: string;
-  marca: string;
-  modelo: string;
-  anio?: number;
-  cliente_nombre: string;
-  cliente_telefono: string;
+  vehiculo: Vehiculo;
   created_at: string;
   creado_por?: Mecanico;
 }
@@ -27,9 +23,10 @@ export interface OrdenRequest {
   marca: string;
   modelo: string;
   anio?: number;
-  cliente_nombre: string;
-  cliente_telefono: string;
-  estado?: string;
+  propietario_nombre: string;
+  propietario_telefono: string;
+  /** Confirma pisar los datos de un vehículo ya registrado. */
+  actualizar_vehiculo?: boolean;
 }
 
 export interface EstadisticaEstado {

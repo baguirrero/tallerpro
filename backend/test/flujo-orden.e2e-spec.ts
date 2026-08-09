@@ -20,11 +20,11 @@ describe('Flujo de una orden (e2e)', () => {
   const nuevaOrden = {
     descripcion: 'Cambio de aceite y revisión de frenos',
     fecha_ingreso: '2026-08-08',
-    placa: 'E2E-001',
+    placa: `FLUJO${Date.now().toString().slice(-5)}`,
     marca: 'Toyota',
     modelo: 'Yaris',
-    cliente_nombre: 'Cliente de prueba',
-    cliente_telefono: '999888777',
+    propietario_nombre: 'Cliente de prueba',
+    propietario_telefono: '999888777',
   };
 
   const iniciarSesion = async (email: string) => {

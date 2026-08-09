@@ -3,6 +3,8 @@
 ## Diagrama
 
 ```
+VEHICULOS ──< ORDENES
+
 USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
            │
            ├──< ORDENES (creado_por)
@@ -22,6 +24,7 @@ USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
 |---|---|---|---|
 | Usuario | Rol | N:M | `@ManyToMany` + `@JoinTable` |
 | Orden | Usuario | N:1 | `@ManyToOne` (creado_por) |
+| Orden | Vehiculo | N:1 | `@ManyToOne` con `onDelete: RESTRICT` |
 | Trabajo | Orden | N:1 | `@ManyToOne` con `onDelete: CASCADE` |
 | Trabajo | Usuario | N:1 | `@ManyToOne` (asignado_a, creado_por) |
 | Comentario | Trabajo | N:1 | `@ManyToOne` con `onDelete: CASCADE` |
@@ -79,6 +82,18 @@ CREATE TABLE usuario_roles (
     PRIMARY KEY (rol_id, usuario_id)
 );
 
+CREATE TABLE vehiculos (
+    id UUID PRIMARY KEY,
+    placa VARCHAR(10) NOT NULL UNIQUE, -- normalizada: mayúsculas y alfanuméricos
+    marca VARCHAR(50) NOT NULL,
+    modelo VARCHAR(50) NOT NULL,
+    anio INTEGER,
+    propietario_nombre VARCHAR(150) NOT NULL,
+    propietario_telefono VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE ordenes (
     id UUID PRIMARY KEY,
     numero_orden VARCHAR(20) NOT NULL UNIQUE, -- de la secuencia ordenes_numero_seq
@@ -87,12 +102,7 @@ CREATE TABLE ordenes (
     fecha_ingreso DATE NOT NULL,
     fecha_entrega DATE,
     estado VARCHAR(20) NOT NULL DEFAULT 'RECIBIDA',
-    placa VARCHAR(10) NOT NULL,
-    marca VARCHAR(50) NOT NULL,
-    modelo VARCHAR(50) NOT NULL,
-    anio INTEGER,
-    cliente_nombre VARCHAR(150) NOT NULL,
-    cliente_telefono VARCHAR(20) NOT NULL,
+    vehiculo_id UUID NOT NULL REFERENCES vehiculos(id) ON DELETE RESTRICT,
     creado_por UUID NOT NULL REFERENCES usuarios(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -141,6 +151,7 @@ Empresariales* visto en clase a otro dominio:
 |---|---|
 | `users` / `roles` / `user_roles` | `usuarios` / `roles` / `usuario_roles` |
 | `projects` (padre, con presupuesto/fechas/estado) | `ordenes` |
+| — (no existía) | `vehiculos`, con la placa como clave natural |
 | `tasks` (hija, con responsable/prioridad/estado) | `trabajos` |
 | `task_comments` | `comentarios` |
 | `attachments` | `adjuntos` |

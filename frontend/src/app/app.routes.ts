@@ -55,6 +55,12 @@ export const routes: Routes = [
       import('./features/ordenes/detalle-orden/detalle-orden').then((c) => c.DetalleOrden),
   },
   {
+    path: 'vehiculos/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/vehiculos/ficha-vehiculo/ficha-vehiculo').then((c) => c.FichaVehiculo),
+  },
+  {
     path: 'usuarios',
     canActivate: [authGuard, rolesGuard],
     data: { roles: [ROLES.ADMINISTRADOR] },

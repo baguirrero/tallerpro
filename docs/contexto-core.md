@@ -16,7 +16,8 @@ vehículo está en qué estado y cuánto trabajo tiene encima cada mecánico.
 Flujo implementado hoy, punta a punta:
 
 ```
-Asesor registra la ORDEN (vehículo + cliente + presupuesto estimado)
+Asesor registra la ORDEN: escribe la placa y, si el auto ya vino antes,
+se autocompletan sus datos y los del propietario
    └─> Jefe de taller la parte en TRABAJOS y los asigna a mecánicos
           └─> Mecánico mueve sus trabajos por el Kanban (PENDIENTE → EN_PROCESO → COMPLETADO)
                  └─> Sobre cada trabajo: COMENTARIOS y ADJUNTOS (fotos / PDF)
@@ -56,6 +57,8 @@ Angular (static) ──HTTP+JWT──> NestJS API ──TypeORM──> PostgreSQ
 ## 3. Modelo de dominio
 
 ```
+VEHICULOS ──< ORDENES
+
 USUARIOS ──┬── usuario_roles ── ROLES        (N:M)
            ├──< ORDENES (creado_por)
            │       └──< TRABAJOS
@@ -78,10 +81,13 @@ Todas las PK son UUID salvo `roles.id`, que es `SERIAL`.
 `Jefe de Taller`, `Asesor de Servicio`, `Mecánico`. El nombre *es* la clave de
 autorización: el JWT lleva los nombres, no los ids.
 
-**`ordenes`** — la unidad de trabajo. Mezcla tres cosas en una sola tabla:
-- Servicio: `numero_orden`(unique), `descripcion`, `presupuesto`, `fecha_ingreso`, `fecha_entrega`, `estado`
-- Vehículo: `placa`, `marca`, `modelo`, `anio`
-- Cliente: `cliente_nombre`, `cliente_telefono`
+**`vehiculos`** — la identidad es la `placa`(unique), siempre normalizada.
+Además `marca`, `modelo`, `anio`, y el propietario embebido
+(`propietario_nombre`, `propietario_telefono`). Borrarlo con órdenes colgando
+falla: la FK es `RESTRICT`.
+
+**`ordenes`** — la unidad de trabajo: `numero_orden`(unique), `descripcion`,
+`presupuesto`, `fecha_ingreso`, `fecha_entrega`, `estado`, y `vehiculo_id`.
 
 **`trabajos`** — hija de orden. `titulo`, `descripcion`, `prioridad`, `estado`,
 `fecha_limite`, `asignado_a`(nullable), `creado_por`.
@@ -161,6 +167,8 @@ Base local `http://localhost:3001`. Todo responde JSON. Validación global con
 | GET | `/usuarios` | Administrador |
 | GET | `/usuarios/mecanicos` | Admin, Jefe, Asesor |
 | PATCH | `/usuarios/:id/estado` | Administrador |
+| GET | `/vehiculos/placa/:placa` | autenticado (autocompletado; acepta cualquier formato) |
+| GET | `/vehiculos/:id` | autenticado (ficha con historial) |
 | GET | `/ordenes?estado=` | autenticado |
 | GET | `/ordenes/estadisticas` | autenticado |
 | GET | `/ordenes/:id` | autenticado |
@@ -236,6 +244,10 @@ Cosas que sorprenden si no se saben:
   buffer y con `diskStorage` el archivo se escribía directo a disco; hoy Multer
   usa `memoryStorage` y el buffer sí está, pero el `fileFilter` se quedó porque
   rechaza antes de procesar nada. Límite: JPG/PNG/PDF, 5 MB.
+- **La placa se guarda normalizada**: mayúsculas y solo letras y dígitos, así que
+  `ABC-123` queda como `ABC123`. Una sola forma canónica, a costa del guion.
+  Una placa conocida con datos distintos responde `409` con las diferencias en
+  vez de reescribir el histórico.
 - **`numero_orden` sale de la secuencia `ordenes_numero_seq`**, formateado como
   `ORD-000001`. Puede tener huecos: las secuencias no se revierten con la
   transacción.
@@ -269,8 +281,13 @@ obligatorias.
 ### Abiertos
 
 **Modelo**
-- Cliente y vehículo no son entidades: van desnormalizados dentro de la orden.
-  El mismo cliente con tres visitas son tres registros; no hay historial por placa.
+- El cliente no es una entidad: vive dentro del vehículo como propietario, así
+  que alguien con dos autos aparece dos veces. El vehículo sí es entidad desde la
+  fase 1 y tiene historial por placa.
+- No hay pantalla para editar un vehículo: una placa mal tipeada se corrige
+  editando la orden con la placa buena, y el fantasma queda sin órdenes.
+- Actualizar el propietario reescribe el dato; no queda registro de quién era el
+  dueño cuando se hizo cada orden.
 - El presupuesto es un número suelto: no hay ítems, ni costo real, ni aprobación
   del cliente, ni repuestos, ni facturación.
 - No hay auditoría de quién cambió qué estado y cuándo (solo `updated_at`).

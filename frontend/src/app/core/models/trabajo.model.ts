@@ -1,11 +1,16 @@
 import { Mecanico } from './usuario.model';
 
-export interface OrdenResumen {
+export interface VehiculoResumen {
   id: string;
-  numero_orden: string;
   placa: string;
   marca: string;
   modelo: string;
+}
+
+export interface OrdenResumen {
+  id: string;
+  numero_orden: string;
+  vehiculo: VehiculoResumen;
 }
 
 export interface Trabajo {

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Orden } from './entities/orden.entity';
 import { Trabajo } from '../trabajos/entities/trabajo.entity';
 import { AdjuntosService } from '../adjuntos/adjuntos.service';
@@ -9,6 +9,7 @@ import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
 import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
 import { puedeCancelar, puedeEntregar } from './estado-orden';
 import { EstadoOrden } from '../common/enums/estados.enum';
+import { VehiculosService } from '../vehiculos/vehiculos.service';
 
 @Injectable()
 export class OrdenesService {
@@ -17,22 +18,37 @@ export class OrdenesService {
     private readonly ordenRepository: Repository<Orden>,
     private readonly dataSource: DataSource,
     private readonly adjuntosService: AdjuntosService,
+    private readonly vehiculosService: VehiculosService,
   ) {}
 
   async crear(dto: CrearOrdenDto, usuarioId: string) {
-    const nuevaOrden = this.ordenRepository.create({
-      ...dto,
-      numero_orden: await this.generarNumeroOrden(),
-      creado_por: { id: usuarioId } as any,
-    });
+    // El vehículo se resuelve dentro de la misma transacción que escribe la
+    // orden: si la orden falla, no queda un vehículo huérfano.
+    return await this.dataSource.transaction(async (manager) => {
+      const vehiculo = await this.vehiculosService.resolverParaOrden(
+        dto,
+        dto.actualizar_vehiculo === true,
+        manager,
+      );
 
-    return await this.ordenRepository.save(nuevaOrden);
+      const nuevaOrden = manager.create(Orden, {
+        descripcion: dto.descripcion,
+        presupuesto: dto.presupuesto,
+        fecha_ingreso: dto.fecha_ingreso,
+        fecha_entrega: dto.fecha_entrega,
+        numero_orden: await this.generarNumeroOrden(manager),
+        vehiculo,
+        creado_por: { id: usuarioId } as any,
+      });
+
+      return await manager.save(nuevaOrden);
+    });
   }
 
   async obtenerTodas(estado?: string) {
     return await this.ordenRepository.find({
       where: estado ? { estado } : {},
-      relations: { creado_por: true },
+      relations: { creado_por: true, vehiculo: true },
       select: {
         id: true,
         numero_orden: true,
@@ -41,13 +57,16 @@ export class OrdenesService {
         fecha_ingreso: true,
         fecha_entrega: true,
         estado: true,
-        placa: true,
-        marca: true,
-        modelo: true,
-        anio: true,
-        cliente_nombre: true,
-        cliente_telefono: true,
         created_at: true,
+        vehiculo: {
+          id: true,
+          placa: true,
+          marca: true,
+          modelo: true,
+          anio: true,
+          propietario_nombre: true,
+          propietario_telefono: true,
+        },
         creado_por: { id: true, username: true, nombres: true, apellidos: true },
       },
       order: { created_at: 'DESC' },
@@ -57,7 +76,7 @@ export class OrdenesService {
   async obtenerPorId(id: string) {
     const orden = await this.ordenRepository.findOne({
       where: { id },
-      relations: { creado_por: true },
+      relations: { creado_por: true, vehiculo: true },
     });
 
     if (!orden) {
@@ -67,11 +86,35 @@ export class OrdenesService {
   }
 
   async actualizar(id: string, dto: ActualizarOrdenDto) {
-    const orden = await this.obtenerPorId(id);
+    return await this.dataSource.transaction(async (manager) => {
+      const orden = await manager.findOne(Orden, {
+        where: { id },
+        relations: { vehiculo: true },
+      });
 
-    Object.assign(orden, dto);
+      if (!orden) {
+        throw new NotFoundException(`No existe la orden con id ${id}`);
+      }
 
-    return await this.ordenRepository.save(orden);
+      // Editar la placa muda la orden al vehículo correcto: es la vía para
+      // corregir una orden registrada con la placa equivocada.
+      if (dto.placa) {
+        orden.vehiculo = await this.vehiculosService.resolverParaOrden(
+          { ...orden.vehiculo, ...dto, placa: dto.placa },
+          dto.actualizar_vehiculo === true,
+          manager,
+        );
+      }
+
+      // Campo por campo y no `Object.assign(orden, dto)`: el DTO trae ahora
+      // datos del vehículo que no son columnas de la orden.
+      if (dto.descripcion !== undefined) orden.descripcion = dto.descripcion;
+      if (dto.presupuesto !== undefined) orden.presupuesto = dto.presupuesto;
+      if (dto.fecha_ingreso !== undefined) orden.fecha_ingreso = dto.fecha_ingreso;
+      if (dto.fecha_entrega !== undefined) orden.fecha_entrega = dto.fecha_entrega;
+
+      return await manager.save(orden);
+    });
   }
 
   /**
@@ -145,11 +188,12 @@ export class OrdenesService {
     };
   }
 
-  private async generarNumeroOrden(): Promise<string> {
-    const filas: Array<{ nextval: string }> =
-      await this.ordenRepository.manager.query(
-        `SELECT nextval('${SECUENCIA_NUMERO_ORDEN}') AS nextval`,
-      );
+  // Recibe el manager para pedir el correlativo por la misma conexión que
+  // está escribiendo la orden.
+  private async generarNumeroOrden(manager: EntityManager): Promise<string> {
+    const filas: Array<{ nextval: string }> = await manager.query(
+      `SELECT nextval('${SECUENCIA_NUMERO_ORDEN}') AS nextval`,
+    );
     return formatearNumeroOrden(Number(filas[0].nextval));
   }
 }
