@@ -29,7 +29,10 @@ USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
 
 ## Estados
 
-- **Orden:** `RECIBIDA` → `EN_PROCESO` → `FINALIZADA` → `ENTREGADA` · `CANCELADA`
+- **Orden:** `RECIBIDA` → `EN_PROCESO` → `FINALIZADA` se **derivan** de los
+  trabajos de la orden y no se pueden editar a mano. `ENTREGADA` y `CANCELADA`
+  son decisiones humanas, tienen su propio endpoint y son terminales: una vez
+  ahí, la orden ya no admite cambios en sus trabajos.
 - **Trabajo (columnas del Kanban):** `PENDIENTE` → `EN_PROCESO` → `COMPLETADO`
 - **Prioridad:** `BAJA` · `MEDIA` · `ALTA`
 
@@ -48,8 +51,8 @@ cualquiera. Se valida en `TrabajosService.actualizarEstado()` y devuelve `403`.
 
 ## Script SQL de referencia
 
-Las tablas las crea TypeORM con `synchronize: true`. Este script documenta
-la estructura equivalente:
+Las tablas las crean las migraciones de TypeORM, en `backend/src/migrations/`.
+Este script documenta la estructura equivalente:
 
 ```sql
 CREATE TABLE usuarios (
@@ -78,7 +81,7 @@ CREATE TABLE usuario_roles (
 
 CREATE TABLE ordenes (
     id UUID PRIMARY KEY,
-    numero_orden VARCHAR(20) NOT NULL UNIQUE,
+    numero_orden VARCHAR(20) NOT NULL UNIQUE, -- de la secuencia ordenes_numero_seq
     descripcion TEXT NOT NULL,
     presupuesto NUMERIC(10,2),
     fecha_ingreso DATE NOT NULL,
@@ -120,8 +123,7 @@ CREATE TABLE comentarios (
 CREATE TABLE adjuntos (
     id UUID PRIMARY KEY,
     nombre_original VARCHAR(255) NOT NULL,
-    nombre_archivo VARCHAR(255) NOT NULL,
-    ruta VARCHAR(500) NOT NULL,
+    clave VARCHAR(500) NOT NULL,
     tipo_mime VARCHAR(100) NOT NULL,
     tamano INTEGER NOT NULL,
     trabajo_id UUID NOT NULL REFERENCES trabajos(id) ON DELETE CASCADE,

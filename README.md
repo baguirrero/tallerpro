@@ -51,6 +51,10 @@ cp ../.env.example .env
 npm run start:dev
 ```
 
+En el `.env` hacen falta además las variables de almacenamiento. Para desarrollo
+basta con `STORAGE_DRIVER=disco` y `API_URL=http://localhost:3001`; las `S3_*`
+solo se usan con el driver `s3`.
+
 La API queda en http://localhost:3001. No hace falta crear las tablas a mano:
 se generan solas al arrancar y el seed carga los roles y los usuarios de prueba.
 
@@ -125,11 +129,11 @@ configurar nada a mano.
 
 Tres cosas que conviene saber del plan gratuito. La primera es que el servicio
 se duerme cuando pasa un rato sin tráfico, y la primera visita después tarda
-cerca de un minuto en responder. La segunda es que el disco es efímero: los
-archivos adjuntos se suben y se ven bien, pero se borran en cada despliegue o
-reinicio, y los discos persistentes no están disponibles en este plan. Lo que
-sí sobrevive es todo lo que está en PostgreSQL, que es el resto de la
-aplicación. La tercera es que las bases de datos gratuitas de Render expiran a
+cerca de un minuto en responder. La segunda es que el disco es efímero, y por eso
+los adjuntos no se guardan ahí: en producción van a un bucket compatible con S3
+y se sirven con URL firmada. Las credenciales (`S3_ENDPOINT`, `S3_BUCKET`,
+`S3_ACCESS_KEY_ID` y `S3_SECRET_ACCESS_KEY`) se cargan a mano en el panel de
+Render y no se versionan. La tercera es que las bases de datos gratuitas de Render expiran a
 los 30 días de creadas.
 
 En producción no se usan los valores del `.env.example`: la conexión a la base
@@ -140,8 +144,29 @@ llega en `DATABASE_URL` y el `JWT_SECRET` lo genera Render.
 Hay varias cosas del código que no se entienden a simple vista y prefiero
 dejarlas escritas.
 
-TypeORM está con `synchronize: true`, que crea y actualiza las tablas solo. Para
-desarrollo va bien; en un proyecto real esto se haría con migraciones.
+El esquema se administra con migraciones. `synchronize` está apagado en las dos
+configuraciones y `migrationsRun: true` aplica lo pendiente al arrancar, así que
+ni en local ni en Render hay que ejecutar nada a mano. Para crear una migración
+después de cambiar una entidad:
+`npm run migration:generate -- src/migrations/NombreDelCambio`.
+
+El número de orden sale de una secuencia de PostgreSQL, no de contar filas. Las
+secuencias son atómicas, así que dos altas simultáneas nunca chocan, pero no se
+revierten con la transacción: si una alta falla, ese número queda saltado. Para
+órdenes de taller es aceptable; para facturación electrónica no lo sería.
+
+El estado de la orden no se edita: se deriva de sus trabajos. Con todos
+pendientes queda `RECIBIDA`, con todos completados pasa a `FINALIZADA`, y
+cualquier mezcla es `EN_PROCESO`. La derivación corre dentro de una transacción
+que bloquea la fila de la orden, porque sin ese bloqueo dos mecánicos
+completando a la vez los dos últimos trabajos dejan la orden mal. `ENTREGADA` y
+`CANCELADA` son las excepciones: son decisiones humanas, tienen su propio
+endpoint, y una vez ahí la orden ya no admite cambios en sus trabajos.
+
+Los adjuntos no se guardan en el disco del servidor. Van detrás de una interfaz
+con dos implementaciones que elige `STORAGE_DRIVER`: disco en desarrollo y un
+bucket compatible con S3 en producción. Con el driver S3 la ruta `/uploads` ni
+siquiera se monta y cada archivo se sirve con una URL firmada de cinco minutos.
 
 Las columnas `date` están tipadas como `string`, no como `Date`. Al principio
 las guardaba como `Date` y las fechas salían un día antes: `new Date('2026-07-27')`
