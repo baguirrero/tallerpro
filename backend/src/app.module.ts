@@ -12,6 +12,7 @@ import { TrabajosModule } from './trabajos/trabajos.module';
 import { ComentariosModule } from './comentarios/comentarios.module';
 import { AdjuntosModule } from './adjuntos/adjuntos.module';
 import { SeedModule } from './seed/seed.module';
+import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { SeedModule } from './seed/seed.module';
     OrdenesModule,
     TrabajosModule,
     ComentariosModule,
+    AlmacenamientoModule,
     AdjuntosModule,
     SeedModule,
   ],
