@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Orden } from './entities/orden.entity';
 import { CrearOrdenDto } from './dto/crear-orden.dto';
 import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
 import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
+import { puedeCancelar, puedeEntregar } from './estado-orden';
+import { EstadoOrden } from '../common/enums/estados.enum';
 
 @Injectable()
 export class OrdenesService {
@@ -65,6 +67,36 @@ export class OrdenesService {
 
     Object.assign(orden, dto);
 
+    return await this.ordenRepository.save(orden);
+  }
+
+  /**
+   * La entrega es una decisión humana, no algo que se derive de los trabajos:
+   * "terminada" es un hecho del taller y "entregada" es un hecho del cliente.
+   */
+  async entregar(id: string) {
+    const orden = await this.obtenerPorId(id);
+
+    if (!puedeEntregar(orden.estado)) {
+      throw new ConflictException(
+        `No se puede entregar una orden en estado ${orden.estado}: primero deben completarse todos sus trabajos`,
+      );
+    }
+
+    orden.estado = EstadoOrden.ENTREGADA;
+    return await this.ordenRepository.save(orden);
+  }
+
+  async cancelar(id: string) {
+    const orden = await this.obtenerPorId(id);
+
+    if (!puedeCancelar(orden.estado)) {
+      throw new ConflictException(
+        `La orden ${orden.numero_orden} ya está ${orden.estado} y no se puede cancelar`,
+      );
+    }
+
+    orden.estado = EstadoOrden.CANCELADA;
     return await this.ordenRepository.save(orden);
   }
 

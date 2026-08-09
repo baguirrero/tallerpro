@@ -50,6 +50,18 @@ export class OrdenesController {
     return await this.ordenesService.actualizar(id, dto);
   }
 
+  @Patch(':id/entregar')
+  @Roles(NombreRol.ADMINISTRADOR, NombreRol.JEFE_TALLER, NombreRol.ASESOR)
+  async entregar(@Param('id') id: string) {
+    return await this.ordenesService.entregar(id);
+  }
+
+  @Patch(':id/cancelar')
+  @Roles(NombreRol.ADMINISTRADOR, NombreRol.JEFE_TALLER)
+  async cancelar(@Param('id') id: string) {
+    return await this.ordenesService.cancelar(id);
+  }
+
   @Delete(':id')
   @Roles(NombreRol.ADMINISTRADOR)
   async eliminar(@Param('id') id: string) {
