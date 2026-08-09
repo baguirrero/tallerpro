@@ -23,6 +23,8 @@ export interface Trabajo {
   fecha_limite?: string;
   precio_mano_obra?: number;
   aprobado?: boolean | null;
+  /** Qué pieza se espera. Solo tiene valor mientras el estado es ESPERANDO_REPUESTO. */
+  motivo_espera?: string | null;
   repuestos?: Repuesto[];
   /** Lo calcula la API: mano de obra más repuestos. */
   subtotal?: number;

@@ -4,7 +4,13 @@ import { DatePipe } from '@angular/common';
 import { TrabajoService } from '../../../core/services/trabajo';
 import { TokenService } from '../../../core/services/token';
 import { Trabajo } from '../../../core/models/trabajo.model';
-import { ESTADOS_TRABAJO, ETIQUETA_ESTADO_TRABAJO, ROLES } from '../../../core/models/estados';
+import {
+  ACCION_TRANSICION,
+  ESTADOS_TRABAJO,
+  ETIQUETA_ESTADO_TRABAJO,
+  ROLES,
+  TRANSICIONES_TRABAJO,
+} from '../../../core/models/estados';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 import { BadgeEstado } from '../../../shared/components/badge-estado/badge-estado';
 
@@ -69,31 +75,44 @@ export class TableroKanban implements OnInit {
     return trabajo.asignado_a?.id === this.tokenService.usuario()?.id;
   }
 
-  hayColumnaAnterior(trabajo: Trabajo): boolean {
-    return this.columnas.indexOf(trabajo.estado as any) > 0;
+  /** Los destinos que el grafo permite, si además esta persona puede mover el
+   *  trabajo. Cuando no puede, la lista queda vacía y no se dibuja ningún botón. */
+  destinos(trabajo: Trabajo): string[] {
+    if (!this.puedeMover(trabajo)) return [];
+    return TRANSICIONES_TRABAJO[trabajo.estado] ?? [];
   }
 
-  hayColumnaSiguiente(trabajo: Trabajo): boolean {
-    const posicion = this.columnas.indexOf(trabajo.estado as any);
-    return posicion >= 0 && posicion < this.columnas.length - 1;
+  /** Si a una arista le falta la etiqueta, se muestra el nombre del estado
+   *  destino: un botón sin texto sería peor que uno con el texto crudo. */
+  accion(trabajo: Trabajo, destino: string): string {
+    return (
+      ACCION_TRANSICION[`${trabajo.estado}->${destino}`] ?? this.etiquetas[destino] ?? destino
+    );
   }
 
-  mover(trabajo: Trabajo, direccion: -1 | 1): void {
-    const posicionActual = this.columnas.indexOf(trabajo.estado as any);
-    const nuevaPosicion = posicionActual + direccion;
-
-    if (nuevaPosicion < 0 || nuevaPosicion >= this.columnas.length) {
-      return;
-    }
-
-    const nuevoEstado = this.columnas[nuevaPosicion];
+  mover(trabajo: Trabajo, destino: string): void {
     this.mensajeError.set(null);
 
-    this.trabajoService.cambiarEstado(trabajo.id, nuevoEstado).subscribe({
+    let motivo: string | undefined;
+    if (destino === 'ESPERANDO_REPUESTO') {
+      const respuesta = prompt('¿Qué repuesto se está esperando?')?.trim();
+      if (!respuesta) return;
+      motivo = respuesta;
+    }
+
+    this.trabajoService.cambiarEstado(trabajo.id, destino, motivo).subscribe({
       next: (actualizado) => {
         this.trabajos.update((lista) =>
           lista.map((item) =>
-            item.id === trabajo.id ? { ...item, estado: actualizado.estado } : item,
+            item.id === trabajo.id
+              ? {
+                  ...item,
+                  estado: actualizado.estado,
+                  // También el motivo: si solo se copiara el estado, la tarjeta
+                  // retomada seguiría mostrando la pieza vieja hasta recargar.
+                  motivo_espera: actualizado.motivo_espera,
+                }
+              : item,
           ),
         );
         this.estadoCambiado.emit();
