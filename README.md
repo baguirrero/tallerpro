@@ -13,6 +13,8 @@ tiene encima cada mecánico. TallerPro lleva ese control:
 - El asesor de servicio registra la orden: escribe la placa y, si el auto ya
   estuvo en el taller, se autocompletan sus datos y los del propietario.
 - El jefe de taller la divide en trabajos y se los asigna a los mecánicos.
+- El cliente aprueba o rechaza cada trabajo cotizado, y hasta que responde
+  nadie puede empezar.
 - Cada mecánico mueve sus trabajos por un tablero Kanban.
 - Sobre cada trabajo se pueden dejar comentarios y subir archivos.
 
@@ -98,6 +100,7 @@ TallerPro/
 │       ├── usuarios/    listado, mecánicos, activar y desactivar
 │       ├── roles/       entidad de roles
 │       ├── vehiculos/   placa, ficha e historial
+│       ├── repuestos/   líneas de repuesto de cada trabajo
 │       ├── ordenes/     CRUD y estadísticas con QueryBuilder
 │       ├── trabajos/    CRUD y cambio de estado del Kanban
 │       ├── comentarios/ comentarios sobre los trabajos
@@ -211,6 +214,18 @@ canónica única a costa del guion impreso. Al registrar una orden con una placa
 conocida pero datos distintos, la API responde `409` con la lista de diferencias
 en lugar de reescribir el histórico del auto; el formulario las muestra y deja
 elegir entre actualizar el vehículo o corregir lo escrito.
+
+El presupuesto no es un número que se escriba a mano: cada trabajo lleva su
+precio de mano de obra y sus repuestos, y el total de la orden es la suma.
+`null` en el precio significa "sin cotizar" y `0` es un precio válido, así que
+poner el precio —aunque sea cero— es lo que declara el trabajo cotizado. Por eso
+cargar un repuesto en un trabajo sin precio responde `409`: si no, ese dinero no
+aparecería en ningún total.
+
+Una orden con trabajos cotizados esperando respuesta está `COTIZADA`, y un
+trabajo sin aprobar no se puede mover en el Kanban. Aprobar no es empezar: si
+nadie ha movido nada, la orden vuelve a `RECIBIDA` hasta que el mecánico
+arranque.
 
 Dos detalles menores: se registra el locale `es-PE` para que los pipes muestren
 `S/ 1,250.50` en lugar de `PEN1250.50`, y los archivos subidos se guardan en

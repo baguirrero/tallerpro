@@ -188,3 +188,35 @@ Authorization: Bearer {{token}}
 ### Ficha con el historial de órdenes
 GET {{api}}/vehiculos/ID_DEL_VEHICULO
 Authorization: Bearer {{token}}
+
+### ─────────────── COTIZACIÓN ───────────────
+
+### Cotizar un trabajo (0 es válido; vacío = sin cotizar)
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "precio_mano_obra": 120.50 }
+
+### Agregar un repuesto (409 si el trabajo no tiene precio de mano de obra)
+POST {{api}}/repuestos/trabajo/ID_DEL_TRABAJO
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "descripcion": "Filtro de aceite", "cantidad": 1, "precio_unitario": 35 }
+
+### Quitar un repuesto
+DELETE {{api}}/repuestos/ID_DEL_REPUESTO
+Authorization: Bearer {{token}}
+
+### Registrar la respuesta del cliente, en bloque
+PATCH {{api}}/ordenes/ID_DE_LA_ORDEN/aprobacion
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "decisiones": [
+    { "trabajo_id": "ID_DEL_TRABAJO_A", "aprobado": true },
+    { "trabajo_id": "ID_DEL_TRABAJO_B", "aprobado": false }
+  ]
+}

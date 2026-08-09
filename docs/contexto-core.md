@@ -18,7 +18,8 @@ Flujo implementado hoy, punta a punta:
 ```
 Asesor registra la ORDEN: escribe la placa y, si el auto ya vino antes,
 se autocompletan sus datos y los del propietario
-   └─> Jefe de taller la parte en TRABAJOS y los asigna a mecánicos
+   └─> Jefe de taller la parte en TRABAJOS con precio y repuestos, y los asigna
+          └─> El cliente aprueba o rechaza cada trabajo; sin aprobación nadie empieza
           └─> Mecánico mueve sus trabajos por el Kanban (PENDIENTE → EN_PROCESO → COMPLETADO)
                  └─> Sobre cada trabajo: COMENTARIOS y ADJUNTOS (fotos / PDF)
 ```
@@ -62,6 +63,7 @@ VEHICULOS ──< ORDENES
 USUARIOS ──┬── usuario_roles ── ROLES        (N:M)
            ├──< ORDENES (creado_por)
            │       └──< TRABAJOS
+           │               ├──< REPUESTOS
            │               ├──< COMENTARIOS
            │               └──< ADJUNTOS
            ├──< TRABAJOS (asignado_a, creado_por)
@@ -87,10 +89,16 @@ Además `marca`, `modelo`, `anio`, y el propietario embebido
 falla: la FK es `RESTRICT`.
 
 **`ordenes`** — la unidad de trabajo: `numero_orden`(unique), `descripcion`,
-`presupuesto`, `fecha_ingreso`, `fecha_entrega`, `estado`, y `vehiculo_id`.
+`fecha_ingreso`, `fecha_entrega`, `estado`, y `vehiculo_id`. El importe no se
+guarda: se calcula sumando los trabajos.
 
 **`trabajos`** — hija de orden. `titulo`, `descripcion`, `prioridad`, `estado`,
-`fecha_limite`, `asignado_a`(nullable), `creado_por`.
+`fecha_limite`, `asignado_a`(nullable), `creado_por`, y desde la fase 2
+`precio_mano_obra` (`null` = sin cotizar, `0` es válido) y `aprobado`
+(`null` = esperando respuesta · `true` · `false`).
+
+**`repuestos`** — líneas de la cotización: `descripcion`, `cantidad`,
+`precio_unitario`. Cuelga de un trabajo.
 
 **`comentarios`** — `contenido` (máx. 1000), cuelga de un trabajo.
 
@@ -100,9 +108,16 @@ de un trabajo. La API añade un campo calculado `url` en cada respuesta.
 
 ### Máquinas de estado
 
-- **Orden:** `RECIBIDA` → `EN_PROCESO` → `FINALIZADA` se **derivan** de los
-  trabajos; `ENTREGADA` y `CANCELADA` son acciones humanas con endpoint propio y
-  son terminales. El campo `estado` no se puede mandar por el `PATCH` genérico.
+- **Orden:** `RECIBIDA` → `COTIZADA` → `EN_PROCESO` → `FINALIZADA` se **derivan**
+  de los trabajos; `ENTREGADA` y `CANCELADA` son acciones humanas con endpoint
+  propio y son terminales. El campo `estado` no se puede mandar por el `PATCH`
+  genérico.
+
+  Evaluado en orden: sin trabajos, `RECIBIDA`; si algún trabajo cotizado espera
+  respuesta, `COTIZADA`; y sobre los **aprobados**, todos pendientes es
+  `RECIBIDA`, todos completados es `FINALIZADA`, y cualquier mezcla es
+  `EN_PROCESO`. Un trabajo rechazado o sin cotizar no participa del avance, y
+  mover uno sin aprobar responde `409`.
 - **Trabajo (columnas del Kanban):** `PENDIENTE` → `EN_PROCESO` → `COMPLETADO`.
   El movimiento es de a un paso, adelante o atrás, y lo impone el frontend
   (índice en el array de columnas), no el backend.
@@ -174,6 +189,9 @@ Base local `http://localhost:3001`. Todo responde JSON. Validación global con
 | GET | `/ordenes/:id` | autenticado |
 | POST | `/ordenes` | Admin, Jefe, Asesor |
 | PATCH | `/ordenes/:id` | Admin, Jefe, Asesor |
+| PATCH | `/ordenes/:id/aprobacion` | Admin, Jefe, Asesor (decisiones en bloque) |
+| POST | `/repuestos/trabajo/:trabajoId` | Admin, Jefe (`409` si el trabajo no está cotizado) |
+| DELETE | `/repuestos/:id` | Admin, Jefe |
 | PATCH | `/ordenes/:id/entregar` | Admin, Jefe, Asesor (solo desde `FINALIZADA`) |
 | PATCH | `/ordenes/:id/cancelar` | Admin, Jefe (desde cualquier no terminal) |
 | DELETE | `/ordenes/:id` | Administrador |
@@ -235,7 +253,12 @@ Cosas que sorprenden si no se saben:
 - **Las columnas `date` están tipadas como `string`**, no como `Date`. Guardadas
   como `Date`, `new Date('2026-07-27')` es medianoche UTC y en Perú (UTC-5)
   retrocede un día.
-- **`presupuesto` lleva un `transformer`** en la columna. Las columnas `numeric`
+- **Un trabajo está cotizado cuando `precio_mano_obra` no es nulo**, y `0` es un
+  precio válido. Cargar un repuesto en un trabajo sin precio responde `409`: si
+  no, ese dinero no aparecería en ningún total. El dinero se calcula en un solo
+  sitio, `ordenes/totales.ts`, y el subtotal por trabajo lo manda la API.
+- **Las columnas de dinero llevan un `transformer`** compartido en
+  `common/transformers/numerico.ts`. Las columnas `numeric`
   de PostgreSQL vuelven del driver como texto para no perder precisión; la API
   devolvía `"680.50"` y al editar la orden el formulario reenviaba ese string,
   que la validación `@IsNumber` rechazaba. El transformer lo convierte al leer.
@@ -288,8 +311,12 @@ obligatorias.
   editando la orden con la placa buena, y el fantasma queda sin órdenes.
 - Actualizar el propietario reescribe el dato; no queda registro de quién era el
   dueño cuando se hizo cada orden.
-- El presupuesto es un número suelto: no hay ítems, ni costo real, ni aprobación
-  del cliente, ni repuestos, ni facturación.
+- No hay costo real contra cotizado: se registra lo que se cobra, no lo que el
+  repuesto le costó al taller. Tampoco hay facturación ni formas de pago.
+- No queda registro de quién aprobó ni cuándo: `aprobado` es el estado actual, no
+  un historial. Y cambiar un precio después de aprobado no vuelve a pedir
+  autorización.
+- Los repuestos no tienen stock ni proveedor: son líneas de texto con precio.
 - No hay auditoría de quién cambió qué estado y cuándo (solo `updated_at`).
 
 **Seguridad**

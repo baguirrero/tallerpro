@@ -25,7 +25,7 @@ export class OrdenesService {
   async crear(dto: CrearOrdenDto, usuarioId: string) {
     // El vehículo se resuelve dentro de la misma transacción que escribe la
     // orden: si la orden falla, no queda un vehículo huérfano.
-    return await this.dataSource.transaction(async (manager) => {
+    const creada = await this.dataSource.transaction(async (manager) => {
       const vehiculo = await this.vehiculosService.resolverParaOrden(
         dto,
         dto.actualizar_vehiculo === true,
@@ -43,6 +43,11 @@ export class OrdenesService {
 
       return await manager.save(nuevaOrden);
     });
+
+    // Se relee para devolver la misma forma que el detalle: con totales. Sin
+    // esto la API devolvería una orden sin `totales`, que el modelo declara
+    // obligatorio.
+    return await this.obtenerDetalle(creada.id);
   }
 
   async obtenerTodas(estado?: string) {
@@ -112,7 +117,7 @@ export class OrdenesService {
   }
 
   async actualizar(id: string, dto: ActualizarOrdenDto) {
-    return await this.dataSource.transaction(async (manager) => {
+    await this.dataSource.transaction(async (manager) => {
       const orden = await manager.findOne(Orden, {
         where: { id },
         relations: { vehiculo: true },
@@ -140,6 +145,8 @@ export class OrdenesService {
 
       return await manager.save(orden);
     });
+
+    return await this.obtenerDetalle(id);
   }
 
   /**
