@@ -1,0 +1,45 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fuente);
+  font-size: var(--t-base);
+  line-height: 1.5;
+  color: var(--texto-primario);
+  background: var(--superficie-hundida);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+
+/*
+ * Foco visible en todo lo enfocable. `:focus-visible` y no `:focus` para que el
+ * anillo aparezca al navegar con teclado y no al hacer clic con el ratón.
+ */
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Las cifras se alinean en columna: dinero, placas y correlativos. */
+.cifra { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

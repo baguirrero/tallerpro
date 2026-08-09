@@ -1,0 +1,38 @@
+/* Solo layout, texto y tabla. Ningún componente vive aquí. */
+
+.pila { display: flex; flex-direction: column; gap: var(--e3); }
+.fila { display: flex; align-items: center; gap: var(--e2); }
+.fila-sep { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); }
+.crece { flex: 1; min-width: 0; }
+
+.texto-suave { color: var(--texto-suave); }
+.texto-menor { font-size: var(--t-menor); }
+.etiqueta {
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+}
+
+.tabla { width: 100%; border-collapse: collapse; font-size: var(--t-tabla); }
+.tabla th {
+  text-align: left;
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+  background: var(--superficie-hundida);
+  padding: var(--e2) var(--e3);
+  border-bottom: 1px solid var(--borde);
+}
+.tabla td {
+  padding: var(--e3);
+  border-bottom: 1px solid var(--borde);
+  color: var(--texto-primario);
+}
+.tabla tbody tr:last-child td { border-bottom: none; }
+.tabla tbody tr { transition: background var(--dur-rapida) var(--ease-suave); }
+.tabla tbody tr:hover { background: var(--superficie-hundida); }
+.tabla .num { text-align: right; font-variant-numeric: tabular-nums; }

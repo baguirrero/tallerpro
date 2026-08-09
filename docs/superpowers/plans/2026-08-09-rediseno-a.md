@@ -298,7 +298,26 @@ Crear `frontend/src/styles/utilidades.css`:
 Reemplazar el contenido de `frontend/src/styles.css`:
 
 ```css
-@import '@fontsource-variable/inter';
+/*
+ * Solo el subconjunto latino. El paquete trae siete (cirílico, griego,
+ * vietnamita…) y el navegador descargaría solo este igualmente gracias al
+ * `unicode-range`, pero los otros seis viajarían en el artefacto de despliegue
+ * sin que nadie los pida nunca: 166 KB de más en un plan gratuito.
+ *
+ * El rango cubre el español completo, acentos y ñ incluidos.
+ */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
 @import './styles/tokens.css';
 @import './styles/base.css';
 @import './styles/utilidades.css';
@@ -448,11 +467,15 @@ Esperado: todos los pares en `ok` y el mensaje final. Si alguno sale `BAJO`, se 
 cd frontend && npm run build && du -sh dist/frontend/browser
 ```
 
-Esperado: compila, y el `dist` queda por debajo de **1 MB** (partía de 812 KB). Comprobar además que se emitió el `.woff2` de Inter:
+Esperado: compila, el `dist` queda por debajo de **1 MB** (partía de 812 KB), y se emite
+**un solo** `.woff2`:
 
 ```bash
 ls dist/frontend/browser/media/*.woff2
 ```
+
+Si aparecen siete, el `@font-face` propio no se aplicó y se está importando el CSS
+completo del paquete: el `dist` sube a 1040 KB y se pasa del techo.
 
 - [ ] **Step 8: Commit**
 
