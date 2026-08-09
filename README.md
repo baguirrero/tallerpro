@@ -39,8 +39,15 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Esto levanta PostgreSQL en el puerto `5434` y pgAdmin en http://localhost:5050,
-donde entras con `admin@taller.com` y la contraseña `admin123`.
+Esto levanta PostgreSQL en el puerto `5434`, pgAdmin en http://localhost:5050
+—donde entras con `admin@taller.com` y la contraseña `admin123`— y MinIO, un
+almacenamiento compatible con S3, cuya consola queda en http://localhost:9001
+con usuario y contraseña `minioadmin`. El bucket `tallerpro` se crea solo.
+
+MinIO no hace falta para el día a día: con `STORAGE_DRIVER=disco` los adjuntos
+van al sistema de archivos. Está para poder ejercitar en local el mismo driver
+que corre en producción, y el `.env.example` trae los cinco valores listos para
+copiar.
 
 ### 2. Backend
 
@@ -111,6 +118,8 @@ TallerPro/
 | API NestJS | 3001 |
 | PostgreSQL | 5434 |
 | pgAdmin | 5050 |
+| MinIO (API) | 9000 |
+| MinIO (consola) | 9001 |
 
 Usé el 3001 y el 5434 porque tenía el 3000 y el 5432 ocupados con otros
 proyectos. Si a ti no te pasa, los cambias en el `.env` y en el `apiUrl` de
