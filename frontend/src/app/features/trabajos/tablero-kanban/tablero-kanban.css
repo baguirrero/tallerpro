@@ -1,0 +1,108 @@
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--e3);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .tablero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.columna {
+  background: var(--superficie-hundida);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  padding: var(--e3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  min-width: 0;
+}
+.columna-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2);
+  margin-bottom: var(--e1);
+}
+.conteo {
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-suave);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-full);
+  padding: 0 var(--e2);
+}
+.columna-vacia {
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+  text-align: center;
+  padding: var(--e6) 0;
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-1);
+  padding: var(--e3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+  min-width: 0;
+}
+/* Sin aprobación no se puede mover: la tarjeta se apaga para que se note. */
+.tarjeta.sin-aprobar {
+  opacity: 0.6;
+}
+
+.titulo {
+  font-size: var(--t-base);
+  font-weight: 600;
+  color: var(--texto-primario);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.marca-sin-aprobar {
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-suave);
+}
+
+.motivo {
+  font-size: var(--t-menor);
+  background: var(--estado-espera-fondo);
+  color: var(--estado-espera-texto);
+  border-radius: var(--r-sm);
+  padding: var(--e1) var(--e2);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e1);
+  margin-top: var(--e1);
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}
