@@ -10,7 +10,8 @@ En un taller chico las atenciones se anotan en un cuaderno o se coordinan por
 WhatsApp, y después nadie sabe en qué quedó cada vehículo ni cuánto trabajo
 tiene encima cada mecánico. TallerPro lleva ese control:
 
-- El asesor de servicio registra la orden con los datos del vehículo y del cliente.
+- El asesor de servicio registra la orden: escribe la placa y, si el auto ya
+  estuvo en el taller, se autocompletan sus datos y los del propietario.
 - El jefe de taller la divide en trabajos y se los asigna a los mecánicos.
 - Cada mecánico mueve sus trabajos por un tablero Kanban.
 - Sobre cada trabajo se pueden dejar comentarios y subir archivos.
@@ -96,6 +97,7 @@ TallerPro/
 │       ├── auth/        login, registro, guards JWT y de roles
 │       ├── usuarios/    listado, mecánicos, activar y desactivar
 │       ├── roles/       entidad de roles
+│       ├── vehiculos/   placa, ficha e historial
 │       ├── ordenes/     CRUD y estadísticas con QueryBuilder
 │       ├── trabajos/    CRUD y cambio de estado del Kanban
 │       ├── comentarios/ comentarios sobre los trabajos
@@ -202,6 +204,13 @@ pero con PostgreSQL en Docker local esa opción impide conectar.
 
 El Kanban se mueve con los botones `◀ ▶` y no arrastrando las tarjetas, porque
 el CDK de Angular no entró en el temario del curso.
+
+La placa es la identidad del vehículo y se guarda normalizada: mayúsculas y
+solo letras y dígitos, así que `ABC-123` queda como `ABC123`. Es una forma
+canónica única a costa del guion impreso. Al registrar una orden con una placa
+conocida pero datos distintos, la API responde `409` con la lista de diferencias
+en lugar de reescribir el histórico del auto; el formulario las muestra y deja
+elegir entre actualizar el vehículo o corregir lo escrito.
 
 Dos detalles menores: se registra el locale `es-PE` para que los pipes muestren
 `S/ 1,250.50` en lugar de `PEN1250.50`, y los archivos subidos se guardan en

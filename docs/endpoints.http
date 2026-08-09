@@ -81,8 +81,8 @@ Content-Type: application/json
   "marca": "Toyota",
   "modelo": "Corolla",
   "anio": 2019,
-  "cliente_nombre": "Juan Pérez",
-  "cliente_telefono": "987654321"
+  "propietario_nombre": "Juan Pérez",
+  "propietario_telefono": "987654321"
 }
 
 ### Actualizar una orden o cambiar su estado
@@ -177,4 +177,14 @@ Authorization: Bearer {{token}}
 
 ### Cancelar una orden (Administrador o Jefe de Taller)
 PATCH {{api}}/ordenes/ID_DE_LA_ORDEN/cancelar
+Authorization: Bearer {{token}}
+
+### ─────────────── VEHÍCULOS ───────────────
+
+### Buscar por placa (para autocompletar; acepta cualquier formato)
+GET {{api}}/vehiculos/placa/abc-123
+Authorization: Bearer {{token}}
+
+### Ficha con el historial de órdenes
+GET {{api}}/vehiculos/ID_DEL_VEHICULO
 Authorization: Bearer {{token}}
