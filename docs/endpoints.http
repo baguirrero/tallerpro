@@ -127,6 +127,31 @@ Content-Type: application/json
 
 { "estado": "EN_PROCESO" }
 
+### Mandar un trabajo a la espera de un repuesto (el motivo es obligatorio)
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "estado": "ESPERANDO_REPUESTO", "motivo_espera": "Kit de embrague Valeo" }
+
+### Retomarlo cuando llega la pieza: el motivo se limpia solo
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "estado": "EN_PROCESO" }
+
+### Transición ilegal: completar desde la espera responde 409
+PATCH {{api}}/trabajos/ID_DEL_TRABAJO/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "estado": "COMPLETADO" }
+
+### Filtrar las órdenes trancadas esperando piezas
+GET {{api}}/ordenes?estado=ESPERANDO_REPUESTO
+Authorization: Bearer {{token}}
+
 ### Editar un trabajo
 PATCH {{api}}/trabajos/ID_DEL_TRABAJO
 Authorization: Bearer {{token}}
