@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { Observable } from 'rxjs';
 
 import { OrdenService } from '../../../core/services/orden';
 import { TokenService } from '../../../core/services/token';
@@ -33,6 +34,7 @@ export class DetalleOrden implements OnInit {
   readonly mensajeError = signal<string | null>(null);
   readonly orden = signal<Orden | null>(null);
   readonly trabajoSeleccionado = signal<Trabajo | null>(null);
+  readonly procesando = signal<boolean>(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -62,8 +64,57 @@ export class DetalleOrden implements OnInit {
     return this.tokenService.tieneRol(ROLES.ADMINISTRADOR, ROLES.JEFE_TALLER, ROLES.ASESOR);
   }
 
+  puedeEntregar(): boolean {
+    return (
+      this.orden()?.estado === 'FINALIZADA' &&
+      this.tokenService.tieneRol(ROLES.ADMINISTRADOR, ROLES.JEFE_TALLER, ROLES.ASESOR)
+    );
+  }
+
+  puedeCancelar(): boolean {
+    const estado = this.orden()?.estado;
+    return (
+      estado !== undefined &&
+      !['ENTREGADA', 'CANCELADA'].includes(estado) &&
+      this.tokenService.tieneRol(ROLES.ADMINISTRADOR, ROLES.JEFE_TALLER)
+    );
+  }
+
+  entregar(): void {
+    this.ejecutarAccion(this.ordenService.entregar(this.orden()!.id));
+  }
+
+  cancelar(): void {
+    if (!confirm('¿Seguro que desea cancelar esta orden? No se podrá revertir.')) return;
+    this.ejecutarAccion(this.ordenService.cancelar(this.orden()!.id));
+  }
+
+  private ejecutarAccion(peticion: Observable<Orden>): void {
+    this.procesando.set(true);
+    this.mensajeError.set(null);
+
+    peticion.subscribe({
+      next: (actualizada) => {
+        this.orden.set(actualizada);
+        this.procesando.set(false);
+      },
+      error: (error) => {
+        this.procesando.set(false);
+        this.mensajeError.set(error.error?.message ?? 'No se pudo completar la acción');
+      },
+    });
+  }
+
+  /** El Kanban avisa cuando mueve una tarjeta: el estado de la orden
+   *  lo decide el backend a partir de sus trabajos, así que se relee. */
+  refrescarOrden(): void {
+    const id = this.orden()?.id;
+    if (id) this.cargarOrden(id);
+  }
+
   alCrearTrabajo(): void {
     this.tablero()?.cargarTrabajos();
+    this.refrescarOrden();
   }
 
   alSeleccionarTrabajo(trabajo: Trabajo): void {
