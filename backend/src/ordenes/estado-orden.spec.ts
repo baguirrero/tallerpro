@@ -4,28 +4,68 @@ import { derivarEstado, esTerminal, puedeCancelar, puedeEntregar } from './estad
 const { PENDIENTE, EN_PROCESO, COMPLETADO } = EstadoTrabajo;
 
 describe('derivarEstado', () => {
+  const pendiente = (extra = {}) => ({ estado: EstadoTrabajo.PENDIENTE, ...extra });
+  const enProceso = (extra = {}) => ({ estado: EstadoTrabajo.EN_PROCESO, ...extra });
+  const completado = (extra = {}) => ({ estado: EstadoTrabajo.COMPLETADO, ...extra });
+  const aprobado = { precio_mano_obra: 100, aprobado: true };
+  const rechazado = { precio_mano_obra: 100, aprobado: false };
+  const sinResponder = { precio_mano_obra: 100, aprobado: null };
+  const sinCotizar = { precio_mano_obra: null, aprobado: null };
+
   it('una orden sin trabajos queda RECIBIDA', () => {
     expect(derivarEstado([])).toBe(EstadoOrden.RECIBIDA);
   });
 
-  it('con todos los trabajos pendientes queda RECIBIDA', () => {
-    expect(derivarEstado([PENDIENTE, PENDIENTE])).toBe(EstadoOrden.RECIBIDA);
+  it('con trabajos sin cotizar sigue RECIBIDA: el jefe está armando la cotización', () => {
+    expect(derivarEstado([pendiente(sinCotizar), pendiente(sinCotizar)])).toBe(
+      EstadoOrden.RECIBIDA,
+    );
   });
 
-  it('con algún trabajo en proceso pasa a EN_PROCESO', () => {
-    expect(derivarEstado([PENDIENTE, EN_PROCESO])).toBe(EstadoOrden.EN_PROCESO);
+  it('con un trabajo cotizado esperando respuesta pasa a COTIZADA', () => {
+    expect(derivarEstado([pendiente(sinResponder)])).toBe(EstadoOrden.COTIZADA);
   });
 
-  it('con parte completada y parte sin empezar sigue EN_PROCESO', () => {
-    expect(derivarEstado([PENDIENTE, COMPLETADO])).toBe(EstadoOrden.EN_PROCESO);
+  it('COTIZADA gana aunque ya haya trabajos aprobados avanzando', () => {
+    expect(derivarEstado([enProceso(aprobado), pendiente(sinResponder)])).toBe(
+      EstadoOrden.COTIZADA,
+    );
   });
 
-  it('con todos los trabajos completados pasa a FINALIZADA', () => {
-    expect(derivarEstado([COMPLETADO, COMPLETADO])).toBe(EstadoOrden.FINALIZADA);
+  it('con todo aprobado y nada empezado vuelve a RECIBIDA', () => {
+    expect(derivarEstado([pendiente(aprobado), pendiente(aprobado)])).toBe(EstadoOrden.RECIBIDA);
   });
 
-  it('con un único trabajo completado pasa a FINALIZADA', () => {
-    expect(derivarEstado([COMPLETADO])).toBe(EstadoOrden.FINALIZADA);
+  it('con un aprobado en proceso pasa a EN_PROCESO', () => {
+    expect(derivarEstado([enProceso(aprobado), pendiente(aprobado)])).toBe(EstadoOrden.EN_PROCESO);
+  });
+
+  it('con parte aprobada completada y parte pendiente sigue EN_PROCESO', () => {
+    expect(derivarEstado([completado(aprobado), pendiente(aprobado)])).toBe(
+      EstadoOrden.EN_PROCESO,
+    );
+  });
+
+  it('con todos los aprobados completados pasa a FINALIZADA', () => {
+    expect(derivarEstado([completado(aprobado), completado(aprobado)])).toBe(
+      EstadoOrden.FINALIZADA,
+    );
+  });
+
+  it('un trabajo rechazado no impide finalizar', () => {
+    expect(derivarEstado([completado(aprobado), pendiente(rechazado)])).toBe(
+      EstadoOrden.FINALIZADA,
+    );
+  });
+
+  it('si el cliente rechaza todo, vuelve a RECIBIDA', () => {
+    expect(derivarEstado([pendiente(rechazado), pendiente(rechazado)])).toBe(EstadoOrden.RECIBIDA);
+  });
+
+  it('un trabajo sin cotizar no impide finalizar los aprobados', () => {
+    expect(derivarEstado([completado(aprobado), pendiente(sinCotizar)])).toBe(
+      EstadoOrden.FINALIZADA,
+    );
   });
 });
 
@@ -60,6 +100,10 @@ describe('puedeCancelar', () => {
     expect(puedeCancelar(EstadoOrden.RECIBIDA)).toBe(true);
     expect(puedeCancelar(EstadoOrden.EN_PROCESO)).toBe(true);
     expect(puedeCancelar(EstadoOrden.FINALIZADA)).toBe(true);
+  });
+
+  it('una orden cotizada se puede cancelar', () => {
+    expect(puedeCancelar(EstadoOrden.COTIZADA)).toBe(true);
   });
 
   it('no se cancela lo que ya es terminal', () => {

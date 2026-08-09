@@ -62,10 +62,10 @@ export class TrabajosService {
   private async sincronizarEstadoOrden(manager: EntityManager, orden: Orden): Promise<void> {
     const trabajos = await manager.find(Trabajo, {
       where: { orden: { id: orden.id } },
-      select: { id: true, estado: true },
+      select: { id: true, estado: true, precio_mano_obra: true, aprobado: true },
     });
 
-    const derivado = derivarEstado(trabajos.map((trabajo) => trabajo.estado));
+    const derivado = derivarEstado(trabajos);
 
     if (derivado !== orden.estado) {
       await manager.update(Orden, { id: orden.id }, { estado: derivado });
@@ -180,6 +180,13 @@ export class TrabajosService {
       if (!esSupervisor && actual.asignado_a?.id !== usuarioId) {
         throw new ForbiddenException(
           'Solo puede cambiar el estado de los trabajos asignados a usted',
+        );
+      }
+
+      // La regla que de verdad impide trabajar sin autorización del cliente.
+      if (actual.aprobado !== true) {
+        throw new ConflictException(
+          `El trabajo "${actual.titulo}" no está aprobado por el cliente`,
         );
       }
 

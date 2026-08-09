@@ -2,19 +2,35 @@ import { EstadoOrden, EstadoTrabajo } from '../common/enums/estados.enum';
 
 const TERMINALES: readonly string[] = [EstadoOrden.ENTREGADA, EstadoOrden.CANCELADA];
 
+export interface TrabajoParaDerivar {
+  estado: string;
+  precio_mano_obra?: number | null;
+  aprobado?: boolean | null;
+}
+
 /**
- * El estado de la orden dentro del taller es función de sus trabajos.
- * Las tres reglas se evalúan en orden, así que una mezcla de pendientes
- * y completados cae en EN_PROCESO.
+ * El estado de la orden dentro del taller es función de sus trabajos, y desde
+ * la fase 2 también de si el cliente respondió.
  *
- * Una orden sin trabajos entra por la primera regla —`[].every()` es `true`—
- * y queda RECIBIDA, que es lo que se busca.
+ * Solo los trabajos aprobados participan del avance: uno rechazado no impide
+ * finalizar, y uno sin cotizar tampoco, porque el jefe todavía está armando la
+ * cotización.
  */
-export function derivarEstado(estadosDeTrabajos: string[]): EstadoOrden {
-  if (estadosDeTrabajos.every((estado) => estado === EstadoTrabajo.PENDIENTE)) {
+export function derivarEstado(trabajos: TrabajoParaDerivar[]): EstadoOrden {
+  if (trabajos.length === 0) return EstadoOrden.RECIBIDA;
+
+  const esperandoRespuesta = trabajos.some(
+    (trabajo) => trabajo.precio_mano_obra != null && trabajo.aprobado == null,
+  );
+  if (esperandoRespuesta) return EstadoOrden.COTIZADA;
+
+  const aprobados = trabajos.filter((trabajo) => trabajo.aprobado === true);
+  if (aprobados.length === 0) return EstadoOrden.RECIBIDA;
+
+  if (aprobados.every((trabajo) => trabajo.estado === EstadoTrabajo.PENDIENTE)) {
     return EstadoOrden.RECIBIDA;
   }
-  if (estadosDeTrabajos.every((estado) => estado === EstadoTrabajo.COMPLETADO)) {
+  if (aprobados.every((trabajo) => trabajo.estado === EstadoTrabajo.COMPLETADO)) {
     return EstadoOrden.FINALIZADA;
   }
   return EstadoOrden.EN_PROCESO;
