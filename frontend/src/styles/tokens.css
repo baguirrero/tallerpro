@@ -40,6 +40,9 @@
   --error-fondo: #fde7e7;   --error-texto: #c42b2b;
   --aviso-fondo: #fff6e0;   --aviso-texto: #8a5d00;
 
+  /* acción destructiva: es un FONDO, no el texto de un mensaje de error */
+  --peligro-fondo: #c42b2b;  --peligro-texto: #ffffff;
+
   /* espaciado, base 4 */
   --e1: 4px;  --e2: 8px;   --e3: 12px;  --e4: 16px;
   --e6: 24px; --e8: 32px;  --e12: 48px; --e16: 64px;
@@ -91,6 +94,8 @@
   --exito-fondo: #123d28;   --exito-texto: #56c88a;
   --error-fondo: #4d1a1a;   --error-texto: #f08585;
   --aviso-fondo: #3f3110;   --aviso-texto: #e8b44c;
+
+  --peligro-fondo: #d93a3a;  --peligro-texto: #ffffff;
 
   /* sobre superficie oscura una sombra azulada al 6 % no se ve */
   --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.4);

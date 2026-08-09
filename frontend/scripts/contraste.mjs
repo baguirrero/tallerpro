@@ -50,6 +50,7 @@ const PARES = [
   'exito',
   'error',
   'aviso',
+  'peligro',
 ];
 
 const MINIMO = 4.5;
