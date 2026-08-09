@@ -1,13 +1,17 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { catchError, debounceTime, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
 
 import { OrdenService } from '../../../core/services/orden';
+import { VehiculoService } from '../../../core/services/vehiculo';
+import { Diferencia, Vehiculo } from '../../../core/models/vehiculo.model';
 import { Spinner } from '../../../shared/components/spinner/spinner';
 
 @Component({
   selector: 'app-formulario-orden',
-  imports: [ReactiveFormsModule, Spinner],
+  imports: [ReactiveFormsModule, RouterLink, Spinner],
   templateUrl: './formulario-orden.html',
   styles: ``,
 })
@@ -16,11 +20,14 @@ export class FormularioOrden implements OnInit {
   private readonly ordenService = inject(OrdenService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly vehiculoService = inject(VehiculoService);
 
   readonly guardando = signal<boolean>(false);
   readonly cargando = signal<boolean>(false);
   readonly mensajeError = signal<string | null>(null);
   readonly ordenId = signal<string | null>(null);
+  readonly vehiculoConocido = signal<Vehiculo | null>(null);
+  readonly diferencias = signal<Diferencia[]>([]);
 
   readonly formulario = this.fb.nonNullable.group({
     descripcion: ['', [Validators.required, Validators.minLength(5)]],
@@ -31,9 +38,41 @@ export class FormularioOrden implements OnInit {
     marca: ['', [Validators.required]],
     modelo: ['', [Validators.required]],
     anio: [new Date().getFullYear(), [Validators.min(1950), Validators.max(2100)]],
-    cliente_nombre: ['', [Validators.required]],
-    cliente_telefono: ['', [Validators.required, Validators.minLength(6)]],
+    propietario_nombre: ['', [Validators.required]],
+    propietario_telefono: ['', [Validators.required, Validators.minLength(6)]],
   });
+
+  constructor() {
+    // Al dejar de teclear la placa se busca el vehículo. El 404 de "placa
+    // desconocida" no es un error que mostrar: significa que el auto es nuevo.
+    this.formulario.controls.placa.valueChanges
+      .pipe(
+        debounceTime(400),
+        map((placa) => placa.replace(/[^A-Za-z0-9]/g, '').toUpperCase()),
+        distinctUntilChanged(),
+        filter((placa) => placa.length >= 6),
+        switchMap((placa) =>
+          this.vehiculoService.buscarPorPlaca(placa).pipe(catchError(() => of(null))),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((vehiculo) => {
+        this.vehiculoConocido.set(vehiculo);
+
+        if (vehiculo && !this.esEdicion) {
+          this.formulario.patchValue(
+            {
+              marca: vehiculo.marca,
+              modelo: vehiculo.modelo,
+              anio: vehiculo.anio ?? new Date().getFullYear(),
+              propietario_nombre: vehiculo.propietario_nombre,
+              propietario_telefono: vehiculo.propietario_telefono,
+            },
+            { emitEvent: false },
+          );
+        }
+      });
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -61,12 +100,12 @@ export class FormularioOrden implements OnInit {
           presupuesto: orden.presupuesto ?? 0,
           fecha_ingreso: orden.fecha_ingreso?.substring(0, 10) ?? '',
           fecha_entrega: orden.fecha_entrega?.substring(0, 10) ?? '',
-          placa: orden.placa,
-          marca: orden.marca,
-          modelo: orden.modelo,
-          anio: orden.anio ?? new Date().getFullYear(),
-          cliente_nombre: orden.cliente_nombre,
-          cliente_telefono: orden.cliente_telefono,
+          placa: orden.vehiculo.placa,
+          marca: orden.vehiculo.marca,
+          modelo: orden.vehiculo.modelo,
+          anio: orden.vehiculo.anio ?? new Date().getFullYear(),
+          propietario_nombre: orden.vehiculo.propietario_nombre,
+          propietario_telefono: orden.vehiculo.propietario_telefono,
         });
         this.cargando.set(false);
       },
@@ -77,7 +116,7 @@ export class FormularioOrden implements OnInit {
     });
   }
 
-  enviar(): void {
+  enviar(actualizarVehiculo = false): void {
     if (this.formulario.invalid) {
       this.formulario.markAllAsTouched();
       return;
@@ -94,9 +133,10 @@ export class FormularioOrden implements OnInit {
       placa: valores.placa,
       marca: valores.marca,
       modelo: valores.modelo,
-      cliente_nombre: valores.cliente_nombre,
-      cliente_telefono: valores.cliente_telefono,
+      propietario_nombre: valores.propietario_nombre,
+      propietario_telefono: valores.propietario_telefono,
     };
+    if (actualizarVehiculo) datos.actualizar_vehiculo = true;
     if (valores.presupuesto > 0) datos.presupuesto = valores.presupuesto;
     if (valores.fecha_entrega) datos.fecha_entrega = valores.fecha_entrega;
     if (valores.anio) datos.anio = valores.anio;
@@ -115,8 +155,25 @@ export class FormularioOrden implements OnInit {
     }
   }
 
+  /** Confirma pisar los datos del vehículo y reenvía la misma orden. */
+  confirmarActualizacionDelVehiculo(): void {
+    this.diferencias.set([]);
+    this.enviar(true);
+  }
+
+  descartarActualizacion(): void {
+    this.diferencias.set([]);
+  }
+
   private manejarError(error: any): void {
     this.guardando.set(false);
+
+    // El 409 no es un error que mostrar: es la API pidiendo confirmación.
+    if (error.status === 409 && Array.isArray(error.error?.diferencias)) {
+      this.diferencias.set(error.error.diferencias);
+      return;
+    }
+
     const mensaje = error.error?.message;
     this.mensajeError.set(
       Array.isArray(mensaje) ? mensaje.join('. ') : (mensaje ?? 'No se pudo guardar la orden'),

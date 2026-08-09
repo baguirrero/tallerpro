@@ -28,6 +28,12 @@
                 @if (tieneError('placa', 'minlength')) {
                   <small class="text-danger">La placa debe tener al menos 6 caracteres</small>
                 }
+                @if (vehiculoConocido(); as vehiculo) {
+                  <small class="text-success d-block mt-1">
+                    Vehículo conocido ·
+                    <a [routerLink]="['/vehiculos', vehiculo.id]">ver historial</a>
+                  </small>
+                }
               </div>
 
               <div class="col-md-3 mb-3">
@@ -52,22 +58,22 @@
               </div>
             </div>
 
-            <h6 class="text-muted mb-3">Datos del cliente</h6>
+            <h6 class="text-muted mb-3">Datos del propietario</h6>
             <div class="row">
               <div class="col-md-8 mb-3">
-                <label class="form-label" for="cliente_nombre">Nombre del cliente</label>
-                <input id="cliente_nombre" type="text" class="form-control"
-                       formControlName="cliente_nombre" />
-                @if (tieneError('cliente_nombre', 'required')) {
+                <label class="form-label" for="propietario_nombre">Nombre del propietario</label>
+                <input id="propietario_nombre" type="text" class="form-control"
+                       formControlName="propietario_nombre" />
+                @if (tieneError('propietario_nombre', 'required')) {
                   <small class="text-danger">El nombre del cliente es obligatorio</small>
                 }
               </div>
 
               <div class="col-md-4 mb-3">
-                <label class="form-label" for="cliente_telefono">Teléfono</label>
-                <input id="cliente_telefono" type="text" class="form-control"
-                       formControlName="cliente_telefono" />
-                @if (tieneError('cliente_telefono', 'required')) {
+                <label class="form-label" for="propietario_telefono">Teléfono</label>
+                <input id="propietario_telefono" type="text" class="form-control"
+                       formControlName="propietario_telefono" />
+                @if (tieneError('propietario_telefono', 'required')) {
                   <small class="text-danger">El teléfono es obligatorio</small>
                 }
               </div>
@@ -113,6 +119,29 @@
               </div>
 
             </div>
+
+            @if (diferencias().length > 0) {
+              <div class="alert alert-warning">
+                <p class="fw-semibold mb-2">Esta placa ya está registrada con otros datos</p>
+                <ul class="mb-3">
+                  @for (diferencia of diferencias(); track diferencia.campo) {
+                    <li>
+                      <strong>{{ diferencia.campo }}</strong>:
+                      guardado <em>{{ diferencia.guardado }}</em>,
+                      escrito <em>{{ diferencia.enviado }}</em>
+                    </li>
+                  }
+                </ul>
+                <button type="button" class="btn btn-sm btn-warning me-2"
+                        (click)="confirmarActualizacionDelVehiculo()">
+                  Actualizar el vehículo
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        (click)="descartarActualizacion()">
+                  Corregir
+                </button>
+              </div>
+            }
 
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary" [disabled]="guardando()">

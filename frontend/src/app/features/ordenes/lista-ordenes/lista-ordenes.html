@@ -49,12 +49,12 @@
             <tr>
               <td class="fw-semibold">{{ orden.numero_orden }}</td>
               <td>
-                {{ orden.marca }} {{ orden.modelo }}
-                <div class="small text-muted">{{ orden.placa }}</div>
+                {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }}
+                <div class="small text-muted">{{ orden.vehiculo.placa }}</div>
               </td>
               <td>
-                {{ orden.cliente_nombre }}
-                <div class="small text-muted">{{ orden.cliente_telefono }}</div>
+                {{ orden.vehiculo.propietario_nombre }}
+                <div class="small text-muted">{{ orden.vehiculo.propietario_telefono }}</div>
               </td>
               <td>{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</td>
               <td>

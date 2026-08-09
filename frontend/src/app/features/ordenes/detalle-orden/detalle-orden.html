@@ -40,15 +40,22 @@
       <div class="row">
         <div class="col-md-4">
           <h6 class="text-muted">Vehículo</h6>
-          <p class="mb-1"><strong>{{ datosOrden.marca }} {{ datosOrden.modelo }}</strong></p>
-          <p class="mb-1">Placa: {{ datosOrden.placa }}</p>
-          <p class="mb-0">Año: {{ datosOrden.anio ?? '—' }}</p>
+          <p class="mb-1">
+            <strong>{{ datosOrden.vehiculo.marca }} {{ datosOrden.vehiculo.modelo }}</strong>
+          </p>
+          <p class="mb-1">
+            Placa:
+            <a [routerLink]="['/vehiculos', datosOrden.vehiculo.id]">
+              {{ datosOrden.vehiculo.placa }}
+            </a>
+          </p>
+          <p class="mb-0">Año: {{ datosOrden.vehiculo.anio ?? '—' }}</p>
         </div>
 
         <div class="col-md-4">
-          <h6 class="text-muted">Cliente</h6>
-          <p class="mb-1">{{ datosOrden.cliente_nombre }}</p>
-          <p class="mb-0">Teléfono: {{ datosOrden.cliente_telefono }}</p>
+          <h6 class="text-muted">Propietario</h6>
+          <p class="mb-1">{{ datosOrden.vehiculo.propietario_nombre }}</p>
+          <p class="mb-0">Teléfono: {{ datosOrden.vehiculo.propietario_telefono }}</p>
         </div>
 
         <div class="col-md-4">

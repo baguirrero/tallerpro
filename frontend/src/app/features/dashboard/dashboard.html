@@ -61,7 +61,7 @@
                   @if (trabajo.orden; as orden) {
                     <span class="fw-semibold">{{ orden.numero_orden }}</span>
                     <div class="small text-muted">
-                      {{ orden.marca }} {{ orden.modelo }} · {{ orden.placa }}
+                      {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }} · {{ orden.vehiculo.placa }}
                     </div>
                   }
                 </td>
