@@ -110,14 +110,18 @@ export class TrabajosService {
   async obtenerMisTrabajos(usuarioId: string) {
     return await this.trabajoRepository.find({
       where: { asignado_a: { id: usuarioId } },
-      relations: { orden: true },
+      relations: { orden: { vehiculo: true } },
       select: {
         id: true,
         titulo: true,
         prioridad: true,
         estado: true,
         fecha_limite: true,
-        orden: { id: true, numero_orden: true, placa: true, marca: true, modelo: true },
+        orden: {
+          id: true,
+          numero_orden: true,
+          vehiculo: { id: true, placa: true, marca: true, modelo: true },
+        },
       },
       order: { fecha_limite: 'ASC' },
     });

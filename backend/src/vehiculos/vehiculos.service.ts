@@ -1,10 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 import { Vehiculo } from './entities/vehiculo.entity';
 import { Orden } from '../ordenes/entities/orden.entity';
 import { normalizarPlaca } from './placa';
+import { compararVehiculo } from './comparar-vehiculo';
+
+export interface DatosVehiculoEntrantes {
+  placa: string;
+  marca: string;
+  modelo: string;
+  anio?: number;
+  propietario_nombre: string;
+  propietario_telefono: string;
+}
 
 @Injectable()
 export class VehiculosService {
@@ -53,5 +63,54 @@ export class VehiculosService {
     });
 
     return { ...vehiculo, ordenes };
+  }
+
+  /**
+   * Find-or-create del vehículo de una orden. Recibe el `manager` de la
+   * transacción que está escribiendo la orden, para que una orden que falla no
+   * deje un vehículo huérfano.
+   */
+  async resolverParaOrden(
+    datos: DatosVehiculoEntrantes,
+    actualizar: boolean,
+    manager: EntityManager,
+  ): Promise<Vehiculo> {
+    const placa = normalizarPlaca(datos.placa);
+    const existente = await manager.findOne(Vehiculo, { where: { placa } });
+
+    if (!existente) {
+      // Campo por campo y no `{ ...datos }`: cuando esto se llama desde
+      // `actualizar`, `datos` viene mezclado con el vehículo actual de la orden
+      // y arrastraría su `id`, con lo que TypeORM haría un UPDATE del vehículo
+      // viejo —cambiándole la placa— en vez de crear uno nuevo.
+      return await manager.save(
+        manager.create(Vehiculo, {
+          placa,
+          marca: datos.marca,
+          modelo: datos.modelo,
+          anio: datos.anio,
+          propietario_nombre: datos.propietario_nombre,
+          propietario_telefono: datos.propietario_telefono,
+        }),
+      );
+    }
+
+    const diferencias = compararVehiculo(existente, datos);
+    if (diferencias.length === 0) {
+      return existente;
+    }
+
+    if (!actualizar) {
+      throw new ConflictException({
+        statusCode: 409,
+        message: `La placa ${placa} ya está registrada con datos distintos`,
+        diferencias,
+      });
+    }
+
+    for (const { campo } of diferencias) {
+      existente[campo] = datos[campo];
+    }
+    return await manager.save(existente);
   }
 }

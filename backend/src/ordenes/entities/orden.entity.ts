@@ -45,24 +45,6 @@ export class Orden {
   @Column({ type: 'varchar', length: 20, default: EstadoOrden.RECIBIDA })
   estado!: string;
 
-  @Column({ type: 'varchar', length: 10 })
-  placa!: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  marca!: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  modelo!: string;
-
-  @Column({ type: 'int', nullable: true })
-  anio?: number;
-
-  @Column({ type: 'varchar', length: 150 })
-  cliente_nombre!: string;
-
-  @Column({ type: 'varchar', length: 20 })
-  cliente_telefono!: string;
-
   // RESTRICT y no CASCADE a propósito: borrar un vehículo con historial debe
   // fallar, no llevarse sus órdenes por delante.
   @ManyToOne(() => Vehiculo, (vehiculo) => vehiculo.ordenes, {

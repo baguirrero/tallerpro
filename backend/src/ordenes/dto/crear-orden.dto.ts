@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsInt,
   IsNotEmpty,
@@ -45,10 +46,16 @@ export class CrearOrdenDto {
   anio?: number;
 
   @IsString()
-  @IsNotEmpty({ message: 'El nombre del cliente es obligatorio' })
-  cliente_nombre!: string;
+  @IsNotEmpty({ message: 'El nombre del propietario es obligatorio' })
+  propietario_nombre!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'El teléfono del cliente es obligatorio' })
-  cliente_telefono!: string;
+  @IsNotEmpty({ message: 'El teléfono del propietario es obligatorio' })
+  propietario_telefono!: string;
+
+  // Confirmación explícita para pisar los datos de un vehículo ya registrado.
+  // Sin esto, una placa conocida con datos distintos responde 409.
+  @IsOptional()
+  @IsBoolean({ message: 'actualizar_vehiculo debe ser verdadero o falso' })
+  actualizar_vehiculo?: boolean;
 }
