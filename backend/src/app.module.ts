@@ -53,10 +53,20 @@ import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
       },
     }),
 
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    // Solo con el driver de disco. Con S3 la ruta /uploads no existe y todo
+    // acceso pasa por URL firmada, así que las fotos del vehículo de un
+    // cliente dejan de ser públicas para quien adivine el nombre del archivo.
+    // Se lee de process.env y no del ConfigService porque este array se
+    // evalúa antes de que exista el contenedor de inyección; ConfigModule
+    // ya pobló process.env con el .env en este punto.
+    ...(process.env.STORAGE_DRIVER === 's3'
+      ? []
+      : [
+          ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'uploads'),
+            serveRoot: '/uploads',
+          }),
+        ]),
 
     RolesModule,
     UsuariosModule,

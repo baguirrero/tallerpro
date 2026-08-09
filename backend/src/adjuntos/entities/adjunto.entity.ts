@@ -17,11 +17,8 @@ export class Adjunto {
   @Column({ type: 'varchar', length: 255 })
   nombre_original!: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nombre_archivo!: string;
-
   @Column({ type: 'varchar', length: 500 })
-  ruta!: string;
+  clave!: string;
 
   @Column({ type: 'varchar', length: 100 })
   tipo_mime!: string;
