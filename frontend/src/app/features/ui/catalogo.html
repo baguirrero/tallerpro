@@ -116,3 +116,28 @@
     </app-estado-vacio>
   </div>
 </div>
+
+<div class="grupo">
+  <span class="etiqueta">Diálogos</span>
+  <div class="muestra" style="margin-top: var(--e3)">
+    <app-boton variante="secundario" (pulsar)="modalAbierto.set(true)">Abrir modal</app-boton>
+    <app-boton variante="peligro" (pulsar)="confirmarAbierto.set(true)">Eliminar orden</app-boton>
+  </div>
+</div>
+
+<app-modal [abierto]="modalAbierto()" titulo="Detalle del trabajo" (cerrar)="modalAbierto.set(false)">
+  <p style="margin: 0">Cambio de embrague · Kia Rio · MAN123</p>
+  <div pie>
+    <app-boton variante="fantasma" (pulsar)="modalAbierto.set(false)">Cerrar</app-boton>
+  </div>
+</app-modal>
+
+<app-confirmar
+  [abierto]="confirmarAbierto()"
+  titulo="¿Eliminar la orden ORD-000042?"
+  mensaje="Se borrarán también sus trabajos, comentarios y adjuntos. No se puede deshacer."
+  [peligro]="true"
+  textoConfirmar="Eliminar"
+  (confirmar)="confirmarAbierto.set(false); toast.exito('Orden eliminada')"
+  (cancelar)="confirmarAbierto.set(false)"
+></app-confirmar>
