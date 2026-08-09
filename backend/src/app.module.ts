@@ -7,6 +7,7 @@ import { join } from 'path';
 import { RolesModule } from './roles/roles.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
+import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { OrdenesModule } from './ordenes/ordenes.module';
 import { TrabajosModule } from './trabajos/trabajos.module';
 import { ComentariosModule } from './comentarios/comentarios.module';
@@ -71,6 +72,7 @@ import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
     RolesModule,
     UsuariosModule,
     AuthModule,
+    VehiculosModule,
     OrdenesModule,
     TrabajosModule,
     ComentariosModule,

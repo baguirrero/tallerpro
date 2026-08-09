@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 import { Trabajo } from '../../trabajos/entities/trabajo.entity';
+import { Vehiculo } from '../../vehiculos/entities/vehiculo.entity';
 import { EstadoOrden } from '../../common/enums/estados.enum';
 
 @Entity('ordenes')
@@ -61,6 +62,15 @@ export class Orden {
 
   @Column({ type: 'varchar', length: 20 })
   cliente_telefono!: string;
+
+  // RESTRICT y no CASCADE a propósito: borrar un vehículo con historial debe
+  // fallar, no llevarse sus órdenes por delante.
+  @ManyToOne(() => Vehiculo, (vehiculo) => vehiculo.ordenes, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'vehiculo_id' })
+  vehiculo!: Vehiculo;
 
   @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'creado_por' })
