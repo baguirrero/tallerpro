@@ -40,10 +40,13 @@ USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
 
   La derivación, evaluada en orden: sin trabajos es `RECIBIDA`; si algún trabajo
   cotizado espera respuesta es `COTIZADA`; y sobre los aprobados, todos
-  pendientes es `RECIBIDA`, todos completados es `FINALIZADA`, y cualquier mezcla
+  pendientes es `RECIBIDA`, ninguno en proceso con alguno esperando pieza es
+  `ESPERANDO_REPUESTO`, todos completados es `FINALIZADA`, y cualquier mezcla
   es `EN_PROCESO`. Solo los aprobados participan: un rechazado no impide
   finalizar, y uno sin cotizar tampoco.
-- **Trabajo (columnas del Kanban):** `PENDIENTE` → `EN_PROCESO` → `COMPLETADO`
+- **Trabajo (columnas del Kanban):** `PENDIENTE` ⇄ `EN_PROCESO` ⇄ `COMPLETADO`,
+  con `ESPERANDO_REPUESTO` colgando de `EN_PROCESO` como desvío. El grafo lo
+  exige la API (`trabajos/transiciones.ts`)
 - **Prioridad:** `BAJA` · `MEDIA` · `ALTA`
 
 ## Roles y permisos
@@ -124,6 +127,7 @@ CREATE TABLE trabajos (
     fecha_limite DATE,
     precio_mano_obra NUMERIC(10,2), -- NULL = sin cotizar; 0 es un precio válido
     aprobado BOOLEAN,               -- NULL = esperando respuesta del cliente
+    motivo_espera VARCHAR(200),     -- NULL salvo mientras espera un repuesto (CHECK)
     orden_id UUID NOT NULL REFERENCES ordenes(id) ON DELETE CASCADE,
     asignado_a UUID REFERENCES usuarios(id),
     creado_por UUID NOT NULL REFERENCES usuarios(id),

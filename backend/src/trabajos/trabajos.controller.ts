@@ -50,6 +50,7 @@ export class TrabajosController {
       dto.estado,
       req.user.sub,
       req.user.roles,
+      dto.motivo_espera,
     );
   }
 

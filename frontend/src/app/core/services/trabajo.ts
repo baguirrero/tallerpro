@@ -29,8 +29,11 @@ export class TrabajoService {
     return this.http.patch<Trabajo>(`${this.url}/${id}`, datos);
   }
 
-  cambiarEstado(id: string, estado: string): Observable<Trabajo> {
-    return this.http.patch<Trabajo>(`${this.url}/${id}/estado`, { estado });
+  cambiarEstado(id: string, estado: string, motivoEspera?: string): Observable<Trabajo> {
+    // El motivo solo viaja al entrar en la espera: la API responde 400 si llega
+    // hacia cualquier otro destino.
+    const cuerpo = motivoEspera ? { estado, motivo_espera: motivoEspera } : { estado };
+    return this.http.patch<Trabajo>(`${this.url}/${id}/estado`, cuerpo);
   }
 
   eliminar(id: string): Observable<MensajeResponse> {

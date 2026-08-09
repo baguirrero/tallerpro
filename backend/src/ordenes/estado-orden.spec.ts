@@ -7,6 +7,7 @@ describe('derivarEstado', () => {
   const pendiente = (extra = {}) => ({ estado: EstadoTrabajo.PENDIENTE, ...extra });
   const enProceso = (extra = {}) => ({ estado: EstadoTrabajo.EN_PROCESO, ...extra });
   const completado = (extra = {}) => ({ estado: EstadoTrabajo.COMPLETADO, ...extra });
+  const esperando = (extra = {}) => ({ estado: EstadoTrabajo.ESPERANDO_REPUESTO, ...extra });
   const aprobado = { precio_mano_obra: 100, aprobado: true };
   const rechazado = { precio_mano_obra: 100, aprobado: false };
   const sinResponder = { precio_mano_obra: 100, aprobado: null };
@@ -67,6 +68,42 @@ describe('derivarEstado', () => {
       EstadoOrden.FINALIZADA,
     );
   });
+
+  it('con todos los aprobados esperando pieza, la orden espera pieza', () => {
+    expect(derivarEstado([esperando(aprobado), esperando(aprobado)])).toBe(
+      EstadoOrden.ESPERANDO_REPUESTO,
+    );
+  });
+
+  it('basta un aprobado en proceso para que la orden siga EN_PROCESO', () => {
+    expect(derivarEstado([esperando(aprobado), enProceso(aprobado)])).toBe(
+      EstadoOrden.EN_PROCESO,
+    );
+  });
+
+  it('esperando junto a uno completado sigue siendo espera: nada avanza', () => {
+    expect(derivarEstado([esperando(aprobado), completado(aprobado)])).toBe(
+      EstadoOrden.ESPERANDO_REPUESTO,
+    );
+  });
+
+  it('esperando junto a uno pendiente también es espera', () => {
+    expect(derivarEstado([esperando(aprobado), pendiente(aprobado)])).toBe(
+      EstadoOrden.ESPERANDO_REPUESTO,
+    );
+  });
+
+  it('un trabajo rechazado esperando pieza no arrastra a la orden', () => {
+    expect(derivarEstado([completado(aprobado), esperando(rechazado)])).toBe(
+      EstadoOrden.FINALIZADA,
+    );
+  });
+
+  it('un cotizado sin respuesta le gana a la espera', () => {
+    expect(derivarEstado([esperando(aprobado), pendiente(sinResponder)])).toBe(
+      EstadoOrden.COTIZADA,
+    );
+  });
 });
 
 describe('esTerminal', () => {
@@ -79,6 +116,10 @@ describe('esTerminal', () => {
     expect(esTerminal(EstadoOrden.RECIBIDA)).toBe(false);
     expect(esTerminal(EstadoOrden.EN_PROCESO)).toBe(false);
     expect(esTerminal(EstadoOrden.FINALIZADA)).toBe(false);
+  });
+
+  it('esperar una pieza no es terminal', () => {
+    expect(esTerminal(EstadoOrden.ESPERANDO_REPUESTO)).toBe(false);
   });
 });
 
@@ -93,6 +134,10 @@ describe('puedeEntregar', () => {
     expect(puedeEntregar(EstadoOrden.ENTREGADA)).toBe(false);
     expect(puedeEntregar(EstadoOrden.CANCELADA)).toBe(false);
   });
+
+  it('no se entrega un auto que todavía espera una pieza', () => {
+    expect(puedeEntregar(EstadoOrden.ESPERANDO_REPUESTO)).toBe(false);
+  });
 });
 
 describe('puedeCancelar', () => {
@@ -104,6 +149,10 @@ describe('puedeCancelar', () => {
 
   it('una orden cotizada se puede cancelar', () => {
     expect(puedeCancelar(EstadoOrden.COTIZADA)).toBe(true);
+  });
+
+  it('una orden esperando repuesto se puede cancelar', () => {
+    expect(puedeCancelar(EstadoOrden.ESPERANDO_REPUESTO)).toBe(true);
   });
 
   it('no se cancela lo que ya es terminal', () => {

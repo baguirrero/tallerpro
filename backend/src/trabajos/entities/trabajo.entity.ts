@@ -44,6 +44,18 @@ export class Trabajo {
   @Column({ type: 'boolean', nullable: true })
   aprobado?: boolean;
 
+  /**
+   * Qué pieza se está esperando. Existe **solo** mientras el estado es
+   * ESPERANDO_REPUESTO, y un CHECK en la base lo exige.
+   *
+   * El tipo lleva `| null` a propósito y no solo `?`: TypeORM ignora las
+   * propiedades en `undefined` al guardar, así que asignar `undefined` al
+   * retomar el trabajo no borraría nada y el CHECK haría fallar el UPDATE.
+   * Limpiar la columna requiere un `null` explícito.
+   */
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  motivo_espera?: string | null;
+
   @ManyToOne(() => Orden, (orden) => orden.trabajos, {
     onDelete: 'CASCADE',
     nullable: false,

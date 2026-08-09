@@ -125,6 +125,14 @@ describe('Flujo de una orden (e2e)', () => {
   });
 
   it('completar el trabajo deja la orden FINALIZADA', async () => {
+    // Desde la fase 2b el movimiento sigue un grafo: no se salta de PENDIENTE
+    // a COMPLETADO sin pasar por EN_PROCESO.
+    await request(app.getHttpServer())
+      .patch(`/trabajos/${trabajoId}/estado`)
+      .set('Authorization', `Bearer ${tokenMecanico}`)
+      .send({ estado: 'EN_PROCESO' })
+      .expect(200);
+
     await request(app.getHttpServer())
       .patch(`/trabajos/${trabajoId}/estado`)
       .set('Authorization', `Bearer ${tokenMecanico}`)

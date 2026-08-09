@@ -95,7 +95,9 @@ guarda: se calcula sumando los trabajos.
 **`trabajos`** — hija de orden. `titulo`, `descripcion`, `prioridad`, `estado`,
 `fecha_limite`, `asignado_a`(nullable), `creado_por`, y desde la fase 2
 `precio_mano_obra` (`null` = sin cotizar, `0` es válido) y `aprobado`
-(`null` = esperando respuesta · `true` · `false`).
+(`null` = esperando respuesta · `true` · `false`). Desde la fase 2b,
+`motivo_espera`: `null` salvo mientras el estado es `ESPERANDO_REPUESTO`, con un
+`CHECK` que lo sostiene.
 
 **`repuestos`** — líneas de la cotización: `descripcion`, `cantidad`,
 `precio_unitario`. Cuelga de un trabajo.
@@ -115,12 +117,15 @@ de un trabajo. La API añade un campo calculado `url` en cada respuesta.
 
   Evaluado en orden: sin trabajos, `RECIBIDA`; si algún trabajo cotizado espera
   respuesta, `COTIZADA`; y sobre los **aprobados**, todos pendientes es
-  `RECIBIDA`, todos completados es `FINALIZADA`, y cualquier mezcla es
+  `RECIBIDA`, ninguno en proceso con alguno esperando pieza es
+  `ESPERANDO_REPUESTO`, todos completados es `FINALIZADA`, y cualquier mezcla es
   `EN_PROCESO`. Un trabajo rechazado o sin cotizar no participa del avance, y
   mover uno sin aprobar responde `409`.
-- **Trabajo (columnas del Kanban):** `PENDIENTE` → `EN_PROCESO` → `COMPLETADO`.
-  El movimiento es de a un paso, adelante o atrás, y lo impone el frontend
-  (índice en el array de columnas), no el backend.
+- **Trabajo (columnas del Kanban):** `PENDIENTE` ⇄ `EN_PROCESO` ⇄ `COMPLETADO`,
+  con `ESPERANDO_REPUESTO` colgando de `EN_PROCESO` como desvío: se entra desde
+  ahí y se vuelve ahí. El grafo son seis aristas, vive en
+  `trabajos/transiciones.ts` y lo **exige la API**: una transición ilegal es
+  `409`.
 - **Prioridad:** `BAJA` · `MEDIA` · `ALTA`.
 
 Los dos estados **están acoplados**: la derivación corre dentro de una
@@ -199,7 +204,7 @@ Base local `http://localhost:3001`. Todo responde JSON. Validación global con
 | GET | `/trabajos/orden/:ordenId` | autenticado |
 | POST | `/trabajos` | Admin, Jefe |
 | PATCH | `/trabajos/:id` | Admin, Jefe |
-| PATCH | `/trabajos/:id/estado` | autenticado + regla de asignación |
+| PATCH | `/trabajos/:id/estado` | autenticado + regla de asignación (`409` si la transición no está en el grafo; `motivo_espera` obligatorio hacia `ESPERANDO_REPUESTO` y prohibido hacia el resto) |
 | DELETE | `/trabajos/:id` | Admin, Jefe |
 | GET | `/comentarios/trabajo/:trabajoId` | autenticado |
 | POST | `/comentarios/trabajo/:trabajoId` | autenticado |
@@ -239,8 +244,10 @@ Pantallas: login, registro, dashboard (estadísticas + "mis trabajos"), lista de
 componente), detalle de orden (datos + Kanban + alta de trabajo + panel de
 trabajo con comentarios y adjuntos), lista de usuarios, cambio de contraseña.
 
-El Kanban se mueve con botones `◀ ▶`, no arrastrando: el CDK de Angular no
-entró en el temario del curso.
+El Kanban se mueve con botones, no arrastrando: el CDK de Angular no entró en el
+temario del curso. Desde la fase 2b hay un botón por destino válido —Iniciar,
+⏸ Esperar repuesto, Completar, ▶ Retomar, ← Reabrir—, generado a partir de la
+tabla de transiciones en vez de las flechas `◀ ▶` que recorrían el array.
 
 ---
 
@@ -248,6 +255,13 @@ entró en el temario del curso.
 
 Cosas que sorprenden si no se saben:
 
+- **La máquina de estados del trabajo vive en el backend.** `transiciones.ts`
+  declara seis aristas y `PATCH /trabajos/:id/estado` responde `409` ante
+  cualquier otra. El frontend duplica la tabla en `core/models/estados.ts` solo
+  para decidir qué botones dibujar, igual que duplica la matriz de roles.
+- **`motivo_espera` se limpia con un `null` explícito**, no con `undefined`:
+  TypeORM ignora las propiedades en `undefined` al guardar, así que un
+  `undefined` dejaría el motivo viejo y el `CHECK` haría fallar el `UPDATE`.
 - **El esquema se administra con migraciones.** `synchronize: false` en las dos
   configuraciones y `migrationsRun: true` aplica lo pendiente al arrancar.
 - **Las columnas `date` están tipadas como `string`**, no como `Date`. Guardadas
@@ -317,6 +331,9 @@ obligatorias.
   un historial. Y cambiar un precio después de aprobado no vuelve a pedir
   autorización.
 - Los repuestos no tienen stock ni proveedor: son líneas de texto con precio.
+- No hay historial de esperas: `motivo_espera` es el motivo actual y se borra al
+  retomar, así que no se puede medir cuántas veces ni por cuánto estuvo trancado
+  un trabajo. Tampoco está enlazado a una fila de `repuestos`.
 - No hay auditoría de quién cambió qué estado y cuándo (solo `updated_at`).
 
 **Seguridad**

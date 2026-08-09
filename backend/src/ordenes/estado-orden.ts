@@ -9,8 +9,9 @@ export interface TrabajoParaDerivar {
 }
 
 /**
- * El estado de la orden dentro del taller es función de sus trabajos, y desde
- * la fase 2 también de si el cliente respondió.
+ * El estado de la orden dentro del taller es función de sus trabajos: desde la
+ * fase 2 también de si el cliente respondió, y desde la 2b de si alguno está
+ * trancado esperando una pieza.
  *
  * Solo los trabajos aprobados participan del avance: uno rechazado no impide
  * finalizar, y uno sin cotizar tampoco, porque el jefe todavía está armando la
@@ -30,6 +31,20 @@ export function derivarEstado(trabajos: TrabajoParaDerivar[]): EstadoOrden {
   if (aprobados.every((trabajo) => trabajo.estado === EstadoTrabajo.PENDIENTE)) {
     return EstadoOrden.RECIBIDA;
   }
+
+  // Nada avanza y algo espera una pieza. Basta un aprobado EN_PROCESO para que
+  // la orden vuelva a reportarse en proceso: el taller sí está metido en ese
+  // auto, aunque otra cosa esté trancada.
+  const alguienTrabajando = aprobados.some(
+    (trabajo) => trabajo.estado === EstadoTrabajo.EN_PROCESO,
+  );
+  const algunaEspera = aprobados.some(
+    (trabajo) => trabajo.estado === EstadoTrabajo.ESPERANDO_REPUESTO,
+  );
+  if (!alguienTrabajando && algunaEspera) {
+    return EstadoOrden.ESPERANDO_REPUESTO;
+  }
+
   if (aprobados.every((trabajo) => trabajo.estado === EstadoTrabajo.COMPLETADO)) {
     return EstadoOrden.FINALIZADA;
   }
