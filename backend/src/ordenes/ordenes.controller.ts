@@ -13,6 +13,8 @@ import {
 import { OrdenesService } from './ordenes.service';
 import { CrearOrdenDto } from './dto/crear-orden.dto';
 import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
+import { RegistrarAprobacionDto } from './dto/registrar-aprobacion.dto';
+import { TrabajosService } from '../trabajos/trabajos.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -21,7 +23,10 @@ import { NombreRol } from '../common/enums/estados.enum';
 @Controller('ordenes')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdenesController {
-  constructor(private readonly ordenesService: OrdenesService) {}
+  constructor(
+    private readonly ordenesService: OrdenesService,
+    private readonly trabajosService: TrabajosService,
+  ) {}
 
   @Get()
   async obtenerTodas(@Query('estado') estado?: string) {
@@ -35,7 +40,7 @@ export class OrdenesController {
 
   @Get(':id')
   async obtenerPorId(@Param('id') id: string) {
-    return await this.ordenesService.obtenerPorId(id);
+    return await this.ordenesService.obtenerDetalle(id);
   }
 
   @Post()
@@ -48,6 +53,14 @@ export class OrdenesController {
   @Roles(NombreRol.ADMINISTRADOR, NombreRol.JEFE_TALLER, NombreRol.ASESOR)
   async actualizar(@Param('id') id: string, @Body() dto: ActualizarOrdenDto) {
     return await this.ordenesService.actualizar(id, dto);
+  }
+
+  // La respuesta del cliente la registra quien habla con él, así que el asesor
+  // entra en los roles.
+  @Patch(':id/aprobacion')
+  @Roles(NombreRol.ADMINISTRADOR, NombreRol.JEFE_TALLER, NombreRol.ASESOR)
+  async registrarAprobacion(@Param('id') id: string, @Body() dto: RegistrarAprobacionDto) {
+    return await this.trabajosService.registrarAprobacion(id, dto.decisiones);
   }
 
   @Patch(':id/entregar')

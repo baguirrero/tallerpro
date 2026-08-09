@@ -98,7 +98,7 @@ describe('Flujo de una orden (e2e)', () => {
       .expect(409);
   });
 
-  it('la orden sigue RECIBIDA con un trabajo pendiente', async () => {
+  it('un trabajo cotizado deja la orden COTIZADA hasta que el cliente responde', async () => {
     const creado = await request(app.getHttpServer())
       .post('/trabajos')
       .set('Authorization', `Bearer ${tokenJefe}`)
@@ -106,10 +106,21 @@ describe('Flujo de una orden (e2e)', () => {
         titulo: 'Cambiar pastillas de freno',
         orden_id: ordenId,
         asignado_a_id: idMecanico,
+        precio_mano_obra: 150,
       })
       .expect(201);
 
     trabajoId = creado.body.id;
+    expect(await estadoDeLaOrden()).toBe('COTIZADA');
+  });
+
+  it('con la aprobación del cliente vuelve a RECIBIDA, lista para empezar', async () => {
+    await request(app.getHttpServer())
+      .patch(`/ordenes/${ordenId}/aprobacion`)
+      .set('Authorization', `Bearer ${tokenJefe}`)
+      .send({ decisiones: [{ trabajo_id: trabajoId, aprobado: true }] })
+      .expect(200);
+
     expect(await estadoDeLaOrden()).toBe('RECIBIDA');
   });
 

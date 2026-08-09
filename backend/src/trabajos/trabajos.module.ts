@@ -10,6 +10,6 @@ import { TrabajosController } from './trabajos.controller';
   imports: [TypeOrmModule.forFeature([Trabajo, Repuesto]), AdjuntosModule],
   providers: [TrabajosService],
   controllers: [TrabajosController],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, TrabajosService],
 })
 export class TrabajosModule {}

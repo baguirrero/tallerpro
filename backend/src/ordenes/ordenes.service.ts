@@ -9,6 +9,7 @@ import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
 import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
 import { puedeCancelar, puedeEntregar } from './estado-orden';
 import { EstadoOrden } from '../common/enums/estados.enum';
+import { calcularTotales } from './totales';
 import { VehiculosService } from '../vehiculos/vehiculos.service';
 
 @Injectable()
@@ -45,9 +46,9 @@ export class OrdenesService {
   }
 
   async obtenerTodas(estado?: string) {
-    return await this.ordenRepository.find({
+    const ordenes = await this.ordenRepository.find({
       where: estado ? { estado } : {},
-      relations: { creado_por: true, vehiculo: true },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
       select: {
         id: true,
         numero_orden: true,
@@ -66,15 +67,42 @@ export class OrdenesService {
           propietario_telefono: true,
         },
         creado_por: { id: true, username: true, nombres: true, apellidos: true },
+        trabajos: {
+          id: true,
+          precio_mano_obra: true,
+          aprobado: true,
+          repuestos: { id: true, cantidad: true, precio_unitario: true },
+        },
       },
       order: { created_at: 'DESC' },
     });
+
+    // Los trabajos se cargan para la suma, no para viajar por la red.
+    return ordenes.map(({ trabajos, ...orden }) => ({
+      ...orden,
+      totales: calcularTotales(trabajos ?? []),
+    }));
+  }
+
+  /** Como `obtenerPorId`, pero con los totales calculados. Es lo que ve el detalle. */
+  async obtenerDetalle(id: string) {
+    const orden = await this.ordenRepository.findOne({
+      where: { id },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
+    });
+
+    if (!orden) {
+      throw new NotFoundException(`No existe la orden con id ${id}`);
+    }
+
+    const { trabajos, ...resto } = orden;
+    return { ...resto, totales: calcularTotales(trabajos ?? []) };
   }
 
   async obtenerPorId(id: string) {
     const orden = await this.ordenRepository.findOne({
       where: { id },
-      relations: { creado_por: true, vehiculo: true },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
     });
 
     if (!orden) {
