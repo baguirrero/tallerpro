@@ -170,3 +170,11 @@ Authorization: Bearer {{token}}
 
 ### Los archivos se abren directamente por su URL:
 ### GET {{api}}/uploads/NOMBRE_GENERADO.png
+
+### Entregar una orden (solo desde FINALIZADA)
+PATCH {{api}}/ordenes/ID_DE_LA_ORDEN/entregar
+Authorization: Bearer {{token}}
+
+### Cancelar una orden (Administrador o Jefe de Taller)
+PATCH {{api}}/ordenes/ID_DE_LA_ORDEN/cancelar
+Authorization: Bearer {{token}}

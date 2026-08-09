@@ -22,6 +22,10 @@ export class TableroKanban implements OnInit {
 
   readonly trabajoSeleccionado = output<Trabajo>();
 
+  /** El estado de la orden se deriva de sus trabajos, así que el padre
+   *  necesita recargarla cada vez que una tarjeta se mueve. */
+  readonly estadoCambiado = output<void>();
+
   readonly cargando = signal<boolean>(true);
   readonly mensajeError = signal<string | null>(null);
   readonly trabajos = signal<Trabajo[]>([]);
@@ -86,6 +90,7 @@ export class TableroKanban implements OnInit {
             item.id === trabajo.id ? { ...item, estado: actualizado.estado } : item,
           ),
         );
+        this.estadoCambiado.emit();
       },
       error: (error) => {
         this.mensajeError.set(error.error?.message ?? 'No se pudo cambiar el estado del trabajo');

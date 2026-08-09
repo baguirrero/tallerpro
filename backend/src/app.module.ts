@@ -12,6 +12,7 @@ import { TrabajosModule } from './trabajos/trabajos.module';
 import { ComentariosModule } from './comentarios/comentarios.module';
 import { AdjuntosModule } from './adjuntos/adjuntos.module';
 import { SeedModule } from './seed/seed.module';
+import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
 
 @Module({
   imports: [
@@ -31,7 +32,9 @@ import { SeedModule } from './seed/seed.module';
             url,
             ssl: { rejectUnauthorized: false },
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: false,
+            migrations: [__dirname + '/migrations/*.js'],
+            migrationsRun: true,
           };
         }
 
@@ -43,15 +46,27 @@ import { SeedModule } from './seed/seed.module';
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_NAME'),
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize: false,
+          migrations: [__dirname + '/migrations/*.js'],
+          migrationsRun: true,
         };
       },
     }),
 
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    // Solo con el driver de disco. Con S3 la ruta /uploads no existe y todo
+    // acceso pasa por URL firmada, así que las fotos del vehículo de un
+    // cliente dejan de ser públicas para quien adivine el nombre del archivo.
+    // Se lee de process.env y no del ConfigService porque este array se
+    // evalúa antes de que exista el contenedor de inyección; ConfigModule
+    // ya pobló process.env con el .env en este punto.
+    ...(process.env.STORAGE_DRIVER === 's3'
+      ? []
+      : [
+          ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'uploads'),
+            serveRoot: '/uploads',
+          }),
+        ]),
 
     RolesModule,
     UsuariosModule,
@@ -59,6 +74,7 @@ import { SeedModule } from './seed/seed.module';
     OrdenesModule,
     TrabajosModule,
     ComentariosModule,
+    AlmacenamientoModule,
     AdjuntosModule,
     SeedModule,
   ],

@@ -20,6 +20,23 @@ services:
         value: "7200"
       - key: CORS_ORIGIN
         value: https://tallerpro-web-36wx.onrender.com
+      - key: API_URL
+        value: https://tallerpro-api-19r0.onrender.com
+      # Los adjuntos van a un bucket: el disco de Render es efímero.
+      # Las credenciales se cargan a mano en el panel (sync: false) para
+      # no versionarlas.
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_REGION
+        value: auto
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
 
   - type: web
     name: tallerpro-web

@@ -4,3 +4,4 @@ dist/
 uploads/
 .angular/
 .DS_Store
+.playwright-mcp/

@@ -11,6 +11,19 @@
       <div>
         <span class="fw-bold fs-5">{{ datosOrden.numero_orden }}</span>
         <app-badge-estado class="ms-2" [estado]="datosOrden.estado"></app-badge-estado>
+
+        @if (puedeEntregar()) {
+          <button class="btn btn-sm btn-success ms-2" [disabled]="procesando()"
+                  (click)="entregar()">
+            Entregar
+          </button>
+        }
+        @if (puedeCancelar()) {
+          <button class="btn btn-sm btn-outline-danger ms-2" [disabled]="procesando()"
+                  (click)="cancelar()">
+            Cancelar
+          </button>
+        }
       </div>
       <div>
         <a class="btn btn-sm btn-outline-secondary" routerLink="/ordenes">Volver</a>
@@ -75,6 +88,7 @@
   <app-tablero-kanban
     [ordenId]="datosOrden.id"
     (trabajoSeleccionado)="alSeleccionarTrabajo($event)"
+    (estadoCambiado)="refrescarOrden()"
   ></app-tablero-kanban>
 
   @if (trabajoSeleccionado(); as trabajo) {

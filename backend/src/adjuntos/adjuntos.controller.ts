@@ -11,9 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { randomUUID } from 'crypto';
+import { memoryStorage } from 'multer';
 
 import { AdjuntosService } from './adjuntos.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -34,13 +32,9 @@ export class AdjuntosController {
   @Post('trabajo/:trabajoId')
   @UseInterceptors(
     FileInterceptor('archivo', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const extension = extname(file.originalname);
-          callback(null, `${randomUUID()}${extension}`);
-        },
-      }),
+      // memoryStorage y no diskStorage: el buffer tiene que llegar al
+      // servicio para que lo entregue al almacenamiento, sea cual sea.
+      storage: memoryStorage(),
 
       fileFilter: (req, file, callback) => {
         const extensionesPermitidas = /\.(jpg|jpeg|png|pdf)$/i;

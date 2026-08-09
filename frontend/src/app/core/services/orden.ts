@@ -37,6 +37,14 @@ export class OrdenService {
     return this.http.patch<Orden>(`${this.url}/${id}`, datos);
   }
 
+  entregar(id: string): Observable<Orden> {
+    return this.http.patch<Orden>(`${this.url}/${id}/entregar`, {});
+  }
+
+  cancelar(id: string): Observable<Orden> {
+    return this.http.patch<Orden>(`${this.url}/${id}/cancelar`, {});
+  }
+
   eliminar(id: string): Observable<MensajeResponse> {
     return this.http.delete<MensajeResponse>(`${this.url}/${id}`);
   }

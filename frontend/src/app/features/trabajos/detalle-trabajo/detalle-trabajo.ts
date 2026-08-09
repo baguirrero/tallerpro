@@ -126,10 +126,6 @@ export class DetalleTrabajo {
     });
   }
 
-  obtenerUrl(adjunto: Adjunto): string {
-    return this.adjuntoService.obtenerUrl(adjunto.nombre_archivo);
-  }
-
   formatearTamano(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }

@@ -58,7 +58,7 @@
         @for (adjunto of adjuntos(); track adjunto.id) {
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <div>
-              <a [href]="obtenerUrl(adjunto)" target="_blank" rel="noopener">
+              <a [href]="adjunto.url" target="_blank" rel="noopener">
                 {{ adjunto.nombre_original }}
               </a>
               <div class="small text-muted">

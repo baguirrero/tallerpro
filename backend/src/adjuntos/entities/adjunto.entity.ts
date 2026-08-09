@@ -17,11 +17,8 @@ export class Adjunto {
   @Column({ type: 'varchar', length: 255 })
   nombre_original!: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nombre_archivo!: string;
-
   @Column({ type: 'varchar', length: 500 })
-  ruta!: string;
+  clave!: string;
 
   @Column({ type: 'varchar', length: 100 })
   tipo_mime!: string;
@@ -29,11 +26,14 @@ export class Adjunto {
   @Column({ type: 'int' })
   tamano!: number;
 
-  @ManyToOne(() => Trabajo, (trabajo) => trabajo.adjuntos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Trabajo, (trabajo) => trabajo.adjuntos, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @JoinColumn({ name: 'trabajo_id' })
   trabajo!: Trabajo;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'subido_por' })
   subido_por!: Usuario;
 

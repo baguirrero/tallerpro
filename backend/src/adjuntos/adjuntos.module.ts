@@ -8,6 +8,8 @@ import { AdjuntosController } from './adjuntos.controller';
   imports: [TypeOrmModule.forFeature([Adjunto])],
   providers: [AdjuntosService],
   controllers: [AdjuntosController],
-  exports: [TypeOrmModule],
+  // AdjuntosService se exporta para que Trabajos y Órdenes puedan limpiar
+  // los archivos del almacenamiento antes de borrar en cascada.
+  exports: [TypeOrmModule, AdjuntosService],
 })
 export class AdjuntosModule {}

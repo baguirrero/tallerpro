@@ -34,7 +34,10 @@ export class Trabajo {
   @Column({ type: 'date', nullable: true })
   fecha_limite?: string;
 
-  @ManyToOne(() => Orden, (orden) => orden.trabajos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Orden, (orden) => orden.trabajos, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @JoinColumn({ name: 'orden_id' })
   orden!: Orden;
 
@@ -42,7 +45,7 @@ export class Trabajo {
   @JoinColumn({ name: 'asignado_a' })
   asignado_a?: Usuario;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'creado_por' })
   creado_por!: Usuario;
 

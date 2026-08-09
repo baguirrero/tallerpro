@@ -62,7 +62,7 @@ export class Orden {
   @Column({ type: 'varchar', length: 20 })
   cliente_telefono!: string;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'creado_por' })
   creado_por!: Usuario;
 
