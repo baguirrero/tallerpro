@@ -17,11 +17,14 @@ export class Comentario {
   @Column({ type: 'text' })
   contenido!: string;
 
-  @ManyToOne(() => Trabajo, (trabajo) => trabajo.comentarios, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Trabajo, (trabajo) => trabajo.comentarios, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @JoinColumn({ name: 'trabajo_id' })
   trabajo!: Trabajo;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'usuario_id' })
   usuario!: Usuario;
 

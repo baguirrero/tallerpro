@@ -29,11 +29,14 @@ export class Adjunto {
   @Column({ type: 'int' })
   tamano!: number;
 
-  @ManyToOne(() => Trabajo, (trabajo) => trabajo.adjuntos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Trabajo, (trabajo) => trabajo.adjuntos, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @JoinColumn({ name: 'trabajo_id' })
   trabajo!: Trabajo;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { nullable: false })
   @JoinColumn({ name: 'subido_por' })
   subido_por!: Usuario;
 

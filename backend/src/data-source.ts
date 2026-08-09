@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { config } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
-config();
+config({ quiet: true });
 
 const rutas = {
   entities: ['src/**/*.entity.ts'],
