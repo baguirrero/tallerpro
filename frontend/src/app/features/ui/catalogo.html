@@ -52,3 +52,32 @@
     </app-tarjeta>
   </div>
 </div>
+
+<div class="grupo">
+  <span class="etiqueta">Formulario</span>
+  <div style="margin-top: var(--e3); display: grid; gap: var(--e4); max-width: 320px">
+    <app-campo
+      etiqueta="Placa"
+      ayuda="Se guarda en mayúsculas y sin guiones"
+      marcador="ABC-123"
+      [valor]="placa()"
+      (valorCambia)="placa.set($event)"
+    ></app-campo>
+
+    <app-campo
+      etiqueta="Placa"
+      error="Esa placa ya existe con otros datos"
+      [valor]="'ABC123'"
+    ></app-campo>
+
+    <app-campo etiqueta="Deshabilitado" [valor]="'No editable'" [deshabilitado]="true"></app-campo>
+
+    <app-select
+      etiqueta="Estado"
+      marcador="Todos los estados"
+      [opciones]="opcionesEstado()"
+      [valor]="estadoElegido()"
+      (valorCambia)="estadoElegido.set($event)"
+    ></app-select>
+  </div>
+</div>
