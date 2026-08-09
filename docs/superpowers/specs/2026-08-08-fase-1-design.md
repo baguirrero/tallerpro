@@ -77,10 +77,19 @@ VEHICULOS ──< ORDENES ──< TRABAJOS ──┬──< COMENTARIOS
                                      └──< ADJUNTOS
 ```
 
-### Migración `ExtraerVehiculos`
+### Migraciones
 
-Un solo archivo, en este orden. El backfill importa aunque hoy la base esté
-vacía: si el proyecto ya se desplegó, ahí sí hay filas.
+**Dos archivos, no uno.** La extracción se parte en dos para que el código pueda
+cambiar entre medio: la primera es puramente aditiva y deja la aplicación
+funcionando igual que antes, y la segunda exige la relación y suelta las
+columnas viejas una vez que el código ya usa el vehículo. Con una sola migración
+habría un commit en el que el esquema y las entidades no se corresponden.
+
+`CrearVehiculos` hace los pasos 1 a 4; `SoltarDatosDeVehiculoEnOrdenes` hace el
+5 y el 6.
+
+El backfill importa aunque hoy la base esté vacía: si el proyecto ya se
+desplegó, ahí sí hay filas.
 
 1. `CREATE TABLE vehiculos (...)` con el índice único sobre `placa`.
 2. Poblar desde las órdenes, una fila por placa normalizada:
