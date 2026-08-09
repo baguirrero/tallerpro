@@ -78,6 +78,14 @@ npm start
 
 Y la aplicación en http://localhost:4200.
 
+### Sistema de diseño
+
+- **`/ui`** — catálogo de componentes. Es donde se verifica que las primitivas se ven
+  bien en tema claro y oscuro, y la referencia al construir pantallas nuevas.
+- **`node scripts/contraste.mjs`** (desde `frontend/`) — comprueba que cada par de
+  color de `styles/tokens.css` llega a AA (4.5:1) en los dos temas. Falla con código
+  distinto de cero, así que sirve tal cual en un hook o en CI.
+
 ## Usuarios de prueba
 
 Todos tienen la contraseña `123456`.
