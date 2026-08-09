@@ -8,27 +8,43 @@ import { TokenService } from '../../../core/services/token';
 import { Orden } from '../../../core/models/orden.model';
 import { Trabajo } from '../../../core/models/trabajo.model';
 import { ROLES } from '../../../core/models/estados';
-import { Spinner } from '../../../shared/components/spinner/spinner';
-import { BadgeEstado } from '../../../shared/components/badge-estado/badge-estado';
+import { Pastilla } from '../../../shared/ui/pastilla';
+import { Boton } from '../../../shared/ui/boton';
+import { Confirmar } from '../../../shared/ui/confirmar';
+import { Esqueleto } from '../../../shared/ui/esqueleto';
+import { ToastService } from '../../../shared/ui/toast';
 import { TableroKanban } from '../../trabajos/tablero-kanban/tablero-kanban';
 import { FormularioTrabajo } from '../../trabajos/formulario-trabajo/formulario-trabajo';
 import { DetalleTrabajo } from '../../trabajos/detalle-trabajo/detalle-trabajo';
 import { PanelCotizacion } from '../panel-cotizacion/panel-cotizacion';
 import { PanelAprobacion } from '../panel-aprobacion/panel-aprobacion';
 
+type Pestana = 'trabajos' | 'cotizacion';
+
 @Component({
   selector: 'app-detalle-orden',
   imports: [
-    RouterLink, CurrencyPipe, DatePipe, Spinner, BadgeEstado,
-    TableroKanban, FormularioTrabajo, DetalleTrabajo, PanelCotizacion, PanelAprobacion,
+    RouterLink,
+    CurrencyPipe,
+    DatePipe,
+    Pastilla,
+    Boton,
+    Confirmar,
+    Esqueleto,
+    TableroKanban,
+    FormularioTrabajo,
+    DetalleTrabajo,
+    PanelCotizacion,
+    PanelAprobacion,
   ],
   templateUrl: './detalle-orden.html',
-  styles: ``,
+  styleUrl: './detalle-orden.css',
 })
 export class DetalleOrden implements OnInit {
   private readonly ordenService = inject(OrdenService);
   private readonly route = inject(ActivatedRoute);
   private readonly tokenService = inject(TokenService);
+  private readonly toast = inject(ToastService);
 
   private readonly tablero = viewChild(TableroKanban);
 
@@ -37,6 +53,10 @@ export class DetalleOrden implements OnInit {
   readonly orden = signal<Orden | null>(null);
   readonly trabajoSeleccionado = signal<Trabajo | null>(null);
   readonly procesando = signal<boolean>(false);
+
+  readonly pestana = signal<Pestana>('trabajos');
+  readonly formularioAbierto = signal<boolean>(false);
+  readonly confirmandoCancelacion = signal<boolean>(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -56,6 +76,16 @@ export class DetalleOrden implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  /** Sin aprobación no se mueve ninguna tarjeta, así que la franja de aviso es
+   *  lo único que no puede quedar escondido detrás de una pestaña. */
+  hayQueAprobar(): boolean {
+    return this.orden()?.estado === 'COTIZADA' && this.puedeAprobar();
+  }
+
+  irACotizacion(): void {
+    this.pestana.set('cotizacion');
   }
 
   puedeAprobar(): boolean {
@@ -87,26 +117,32 @@ export class DetalleOrden implements OnInit {
   }
 
   entregar(): void {
-    this.ejecutarAccion(this.ordenService.entregar(this.orden()!.id));
+    this.ejecutarAccion(this.ordenService.entregar(this.orden()!.id), 'La orden se entregó');
   }
 
-  cancelar(): void {
-    if (!confirm('¿Seguro que desea cancelar esta orden? No se podrá revertir.')) return;
-    this.ejecutarAccion(this.ordenService.cancelar(this.orden()!.id));
+  confirmarCancelacion(): void {
+    this.confirmandoCancelacion.set(false);
+    this.ejecutarAccion(this.ordenService.cancelar(this.orden()!.id), 'La orden se canceló');
   }
 
-  private ejecutarAccion(peticion: Observable<Orden>): void {
+  /**
+   * La respuesta de entregar y cancelar es la entidad cruda: trae el estado
+   * nuevo pero **no** `totales`, que solo calcula el endpoint de detalle. Poner
+   * esa respuesta en el signal dejaba la cabecera a medio pintar con un
+   * TypeError. Por eso se relee la orden en vez de creerle a la mutación.
+   */
+  private ejecutarAccion(peticion: Observable<Orden>, exito: string): void {
     this.procesando.set(true);
-    this.mensajeError.set(null);
 
     peticion.subscribe({
       next: (actualizada) => {
-        this.orden.set(actualizada);
         this.procesando.set(false);
+        this.toast.exito(exito);
+        this.cargarOrden(actualizada.id);
       },
       error: (error) => {
         this.procesando.set(false);
-        this.mensajeError.set(error.error?.message ?? 'No se pudo completar la acción');
+        this.toast.error(error.error?.message ?? 'No se pudo completar la acción');
       },
     });
   }
@@ -120,6 +156,7 @@ export class DetalleOrden implements OnInit {
   }
 
   alCrearTrabajo(): void {
+    this.formularioAbierto.set(false);
     this.tablero()?.cargarTrabajos();
     this.refrescarOrden();
   }
