@@ -228,9 +228,14 @@ src/app/
 │   ├── guards/        authGuard (token presente), rolesGuard (data.roles)
 │   ├── interceptors/  jwtInterceptor — añade Bearer solo a environment.apiUrl
 │   ├── models/        interfaces + constantes de estados, etiquetas y colores
-│   └── services/      auth, token, orden, trabajo, comentario, adjunto, usuario
-├── shared/components/ navbar, spinner, badge-estado
-└── features/          auth · dashboard · ordenes · trabajos · usuarios · perfil
+│   └── services/      auth, token, tema, orden, trabajo, comentario, adjunto,
+│                      usuario, vehiculo
+├── shared/
+│   ├── ui/            el sistema de diseño: botón, campo, select, pastilla,
+│   │                  tarjeta, toast, esqueleto, estado vacío, modal, confirmar
+│   ├── shell/         barra lateral, topbar y cajón móvil
+│   └── components/    spinner, badge-estado (heredados; se retiran en la entrega C)
+└── features/          auth · dashboard · ordenes · trabajos · usuarios · perfil · ui
 ```
 
 Todas las rutas de `features` son `loadComponent` (lazy). Estado local con
@@ -255,6 +260,22 @@ tabla de transiciones en vez de las flechas `◀ ▶` que recorrían el array.
 
 Cosas que sorprenden si no se saben:
 
+- **El color vive en `styles/tokens.css` y en ningún otro sitio.** Los tokens son
+  semánticos (`--superficie`, no `--blanco`), y por eso el tema oscuro es un bloque
+  de redefiniciones. Un componente que nombre un color crudo se rompe en oscuro:
+  `node scripts/contraste.mjs` verifica los pares y falla con código distinto de
+  cero, y un `grep` de `#` sobre `shared/ui/` encuentra a los infractores.
+- **Cuidado con el *rol* de un token, no solo con su nombre.** El botón de peligro
+  usaba `--error-texto` como fondo: en claro pasaba desapercibido porque es un rojo
+  oscuro, y en oscuro es un rosa claro que dejaba el texto blanco en 2.50:1. Las
+  acciones destructivas tienen `--peligro-fondo` y `--peligro-texto` propios.
+- **Los `@import` de `styles.css` van primeros**, sin nada delante. En CSS solo
+  `@charset` y `@layer` pueden precederlos: con un `@font-face` arriba, el navegador
+  los descarta en silencio y los tokens no llegan al bundle.
+- **Bootstrap y el sistema propio conviven** hasta que la entrega C del rediseño
+  termine. La regla es que un componente usa uno u otro, nunca los dos.
+- **La ruta `/ui` es el catálogo de componentes**, y es donde se verifica el sistema
+  de diseño en ambos temas.
 - **La máquina de estados del trabajo vive en el backend.** `transiciones.ts`
   declara seis aristas y `PATCH /trabajos/:id/estado` responde `409` ante
   cualquier otra. El frontend duplica la tabla en `core/models/estados.ts` solo

@@ -1,0 +1,104 @@
+/*
+ * La única fuente de color del proyecto.
+ *
+ * Los tokens son SEMÁNTICOS, no descriptivos: se llaman `--superficie` y no
+ * `--blanco`, porque en tema oscuro la superficie no es blanca. Esa es toda la
+ * razón por la que el tema oscuro cuesta un bloque y no una reescritura.
+ */
+:root {
+  /* superficie, borde, texto */
+  --superficie: #ffffff;
+  --superficie-hundida: #f5f7fa;
+  --superficie-elevada: #ffffff;
+  --borde: #e1e6ef;
+  --borde-fuerte: #c9d2e0;
+  --texto-primario: #172b4d;
+  --texto-suave: #5b6b85;
+
+  /* acento — SOLO para lo pulsable, nunca para un estado */
+  --acento: #0073ea;
+  --acento-hover: #0060c2;
+  --acento-suave: #e1effc;
+  --acento-texto: #ffffff;
+
+  /* estados de orden y de trabajo */
+  --estado-recibida-fondo: #e6e9ef;      --estado-recibida-texto: #495468;
+  --estado-cotizada-fondo: #fff0cc;      --estado-cotizada-texto: #8a5a00;
+  --estado-proceso-fondo: #eae2fc;       --estado-proceso-texto: #5b33b5;
+  --estado-espera-fondo: #ffe0cc;        --estado-espera-texto: #9a4400;
+  --estado-finalizada-fondo: #d3f5e0;    --estado-finalizada-texto: #14663a;
+  --estado-entregada-fondo: #323c4e;     --estado-entregada-texto: #ffffff;
+  --estado-cancelada-fondo: #ffdcdc;     --estado-cancelada-texto: #a11b1b;
+
+  /* prioridad: puntos, no pastillas */
+  --prioridad-baja: #94a3b8;
+  --prioridad-media: #f59e0b;
+  --prioridad-alta: #dc2626;
+
+  /* feedback — aparte de los estados a propósito */
+  --exito-fondo: #e3f7eb;   --exito-texto: #0e7a43;
+  --error-fondo: #fde7e7;   --error-texto: #c42b2b;
+  --aviso-fondo: #fff6e0;   --aviso-texto: #8a5d00;
+
+  /* acción destructiva: es un FONDO, no el texto de un mensaje de error */
+  --peligro-fondo: #c42b2b;  --peligro-texto: #ffffff;
+
+  /* espaciado, base 4 */
+  --e1: 4px;  --e2: 8px;   --e3: 12px;  --e4: 16px;
+  --e6: 24px; --e8: 32px;  --e12: 48px; --e16: 64px;
+
+  /* radios */
+  --r-sm: 6px; --r-md: 10px; --r-full: 999px;
+
+  /* tipografía */
+  --fuente: 'Inter Variable', system-ui, -apple-system, sans-serif;
+  --t-etiqueta: 11px; --t-menor: 12px;  --t-tabla: 13px;
+  --t-base: 14px;     --t-titulo: 16px; --t-h2: 20px; --t-h1: 24px;
+
+  /* sombras: siempre acompañadas de borde */
+  --sombra-1: 0 1px 2px rgba(23, 43, 77, 0.06);
+  --sombra-2: 0 4px 12px rgba(23, 43, 77, 0.08);
+  --sombra-3: 0 12px 32px rgba(23, 43, 77, 0.14);
+
+  /* movimiento */
+  --dur-rapida: 120ms; --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-media: 180ms;  --ease-entrada: cubic-bezier(0.4, 0, 1, 1);
+  --dur-lenta: 260ms;  --ease-suave: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* layout del shell */
+  --ancho-barra: 240px; --alto-topbar: 56px; --ancho-contenido: 1280px;
+}
+
+:root[data-tema='oscuro'] {
+  --superficie: #18233a;
+  --superficie-hundida: #101828;
+  --superficie-elevada: #1e2b45;
+  --borde: #26334a;
+  --borde-fuerte: #35455f;
+  --texto-primario: #e9edf5;
+  --texto-suave: #98a5bc;
+
+  --acento: #2f8ff5;
+  --acento-hover: #58a6f7;
+  --acento-suave: #1b2e4a;
+  --acento-texto: #101828;
+
+  --estado-recibida-fondo: #26314a;      --estado-recibida-texto: #afb9ce;
+  --estado-cotizada-fondo: #4a3a12;      --estado-cotizada-texto: #f5c563;
+  --estado-proceso-fondo: #33245c;       --estado-proceso-texto: #b79bf5;
+  --estado-espera-fondo: #5a3212;        --estado-espera-texto: #f5a96b;
+  --estado-finalizada-fondo: #12452b;    --estado-finalizada-texto: #72d89d;
+  --estado-entregada-fondo: #8791a6;     --estado-entregada-texto: #101828;
+  --estado-cancelada-fondo: #5a1c1c;     --estado-cancelada-texto: #f58f8f;
+
+  --exito-fondo: #123d28;   --exito-texto: #56c88a;
+  --error-fondo: #4d1a1a;   --error-texto: #f08585;
+  --aviso-fondo: #3f3110;   --aviso-texto: #e8b44c;
+
+  --peligro-fondo: #d93a3a;  --peligro-texto: #ffffff;
+
+  /* sobre superficie oscura una sombra azulada al 6 % no se ve */
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sombra-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --sombra-3: 0 12px 32px rgba(0, 0, 0, 0.55);
+}

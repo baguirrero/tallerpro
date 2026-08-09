@@ -1,0 +1,9 @@
+/* Login y registro: sin barra lateral, contenido centrado. */
+.sin-sesion {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--e4);
+  background: var(--superficie-hundida);
+}

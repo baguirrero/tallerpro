@@ -68,6 +68,13 @@ export const routes: Routes = [
       import('./features/usuarios/lista-usuarios/lista-usuarios').then((c) => c.ListaUsuarios),
   },
   {
+    // Catálogo del sistema de diseño. Es donde se verifica que las primitivas
+    // se ven bien en los dos temas, y la referencia para las entregas B y C.
+    path: 'ui',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/ui/catalogo').then((c) => c.Catalogo),
+  },
+  {
     path: '**',
     redirectTo: 'dashboard',
   },

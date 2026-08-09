@@ -5,3 +5,6 @@ uploads/
 .angular/
 .DS_Store
 .playwright-mcp/
+
+# Mockups del compañero visual de brainstorming
+.superpowers/

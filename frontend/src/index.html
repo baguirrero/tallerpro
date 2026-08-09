@@ -6,6 +6,16 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Aplica el tema antes de que Angular arranque. Sin esto, cargar en modo
+    // oscuro produce un destello blanco de varios cientos de milisegundos.
+    (function () {
+      var g = localStorage.getItem('tallerpro-tema');
+      var oscuro = g ? g === 'oscuro'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (oscuro) document.documentElement.setAttribute('data-tema', 'oscuro');
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

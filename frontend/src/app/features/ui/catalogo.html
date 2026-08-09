@@ -1,0 +1,143 @@
+<h1 style="font-size: var(--t-h1); margin-bottom: var(--e6)">Catálogo de componentes</h1>
+
+<div class="grupo">
+  <span class="etiqueta">Botones</span>
+  <div class="muestra" style="margin-top: var(--e3)">
+    <app-boton variante="primario">Nueva orden</app-boton>
+    <app-boton variante="secundario">Filtrar</app-boton>
+    <app-boton variante="fantasma">Cancelar</app-boton>
+    <app-boton variante="peligro">Eliminar</app-boton>
+    <app-boton variante="primario" tamano="sm">Pequeño</app-boton>
+    <app-boton variante="primario" [cargando]="true">Guardando</app-boton>
+    <app-boton variante="primario" [deshabilitado]="true">Deshabilitado</app-boton>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Estados</span>
+  <div class="muestra" style="margin-top: var(--e3)">
+    @for (estado of estados(); track estado) {
+      <app-pastilla [estado]="estado"></app-pastilla>
+    }
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Prioridad</span>
+  <p class="texto-suave texto-menor" style="margin: var(--e2) 0 0">
+    No es una pastilla a propósito: si lo fuera competiría con el estado en la misma tarjeta.
+  </p>
+  <div class="muestra" style="margin-top: var(--e3)">
+    <span class="fila">
+      <span class="punto" style="background: var(--prioridad-baja)"></span> Baja
+    </span>
+    <span class="fila">
+      <span class="punto" style="background: var(--prioridad-media)"></span> Media
+    </span>
+    <span class="fila">
+      <span class="punto" style="background: var(--prioridad-alta)"></span> Alta
+    </span>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Tarjeta</span>
+  <div style="margin-top: var(--e3); max-width: 460px">
+    <app-tarjeta titulo="Orden ORD-000042">
+      <app-boton acciones variante="fantasma" tamano="sm">Editar</app-boton>
+      <p style="margin: 0">Kia Rio · placa MAN123</p>
+      <p class="texto-suave texto-menor" style="margin: var(--e2) 0 0">
+        Cliente Manual · 999000111
+      </p>
+    </app-tarjeta>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Formulario</span>
+  <div style="margin-top: var(--e3); display: grid; gap: var(--e4); max-width: 320px">
+    <app-campo
+      etiqueta="Placa"
+      ayuda="Se guarda en mayúsculas y sin guiones"
+      marcador="ABC-123"
+      [valor]="placa()"
+      (valorCambia)="placa.set($event)"
+    ></app-campo>
+
+    <app-campo
+      etiqueta="Placa"
+      error="Esa placa ya existe con otros datos"
+      [valor]="'ABC123'"
+    ></app-campo>
+
+    <app-campo etiqueta="Deshabilitado" [valor]="'No editable'" [deshabilitado]="true"></app-campo>
+
+    <app-select
+      etiqueta="Estado"
+      marcador="Todos los estados"
+      [opciones]="opcionesEstado()"
+      [valor]="estadoElegido()"
+      (valorCambia)="estadoElegido.set($event)"
+    ></app-select>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Avisos</span>
+  <div class="muestra" style="margin-top: var(--e3)">
+    <app-boton variante="secundario" (pulsar)="toast.exito('Orden creada correctamente')">
+      Éxito
+    </app-boton>
+    <app-boton variante="secundario" (pulsar)="toast.error('No se pudo guardar la orden')">
+      Error
+    </app-boton>
+    <app-boton variante="secundario" (pulsar)="toast.aviso('El trabajo espera un repuesto')">
+      Aviso
+    </app-boton>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Carga</span>
+  <div style="margin-top: var(--e3); max-width: 460px">
+    <app-esqueleto variante="fila" [repeticiones]="3"></app-esqueleto>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Sin datos</span>
+  <div style="margin-top: var(--e3); max-width: 460px">
+    <app-estado-vacio
+      icono="🔧"
+      titulo="Sin trabajos todavía"
+      mensaje="Agrega el primer trabajo para empezar a mover el tablero."
+    >
+      <app-boton variante="primario" tamano="sm">Agregar trabajo</app-boton>
+    </app-estado-vacio>
+  </div>
+</div>
+
+<div class="grupo">
+  <span class="etiqueta">Diálogos</span>
+  <div class="muestra" style="margin-top: var(--e3)">
+    <app-boton variante="secundario" (pulsar)="modalAbierto.set(true)">Abrir modal</app-boton>
+    <app-boton variante="peligro" (pulsar)="confirmarAbierto.set(true)">Eliminar orden</app-boton>
+  </div>
+</div>
+
+<app-modal [abierto]="modalAbierto()" titulo="Detalle del trabajo" (cerrar)="modalAbierto.set(false)">
+  <p style="margin: 0">Cambio de embrague · Kia Rio · MAN123</p>
+  <div pie>
+    <app-boton variante="fantasma" (pulsar)="modalAbierto.set(false)">Cerrar</app-boton>
+  </div>
+</app-modal>
+
+<app-confirmar
+  [abierto]="confirmarAbierto()"
+  titulo="¿Eliminar la orden ORD-000042?"
+  mensaje="Se borrarán también sus trabajos, comentarios y adjuntos. No se puede deshacer."
+  [peligro]="true"
+  textoConfirmar="Eliminar"
+  (confirmar)="confirmarAbierto.set(false); toast.exito('Orden eliminada')"
+  (cancelar)="confirmarAbierto.set(false)"
+></app-confirmar>
