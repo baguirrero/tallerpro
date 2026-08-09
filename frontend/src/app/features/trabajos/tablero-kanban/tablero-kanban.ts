@@ -56,7 +56,13 @@ export class TableroKanban implements OnInit {
     return this.trabajos().filter((trabajo) => trabajo.estado === estado);
   }
 
+  /** Sin la aprobación del cliente no se mueve nada, ni siquiera el jefe. */
+  estaAprobado(trabajo: Trabajo): boolean {
+    return trabajo.aprobado === true;
+  }
+
   puedeMover(trabajo: Trabajo): boolean {
+    if (!this.estaAprobado(trabajo)) return false;
     if (this.tokenService.tieneRol(ROLES.ADMINISTRADOR, ROLES.JEFE_TALLER)) {
       return true;
     }

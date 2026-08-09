@@ -40,7 +40,7 @@
             <th>Orden</th>
             <th>Ingreso</th>
             <th>Servicio</th>
-            <th>Presupuesto</th>
+            <th>Aprobado</th>
             <th>Estado</th>
           </tr>
         </thead>
@@ -51,7 +51,7 @@
               <td>{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' }}</td>
               <td>{{ orden.descripcion }}</td>
               <td>
-                <span class="text-muted">—</span>
+                {{ orden.totales.aprobado | currency: 'PEN' }}
               </td>
               <td><app-badge-estado [estado]="orden.estado"></app-badge-estado></td>
             </tr>

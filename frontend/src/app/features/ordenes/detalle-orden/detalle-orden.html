@@ -60,6 +60,10 @@
 
         <div class="col-md-4">
           <h6 class="text-muted">Servicio</h6>
+          <p class="mb-1">
+            Aprobado:
+            <strong>{{ datosOrden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}</strong>
+          </p>
           <p class="mb-1">Ingreso: {{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</p>
           <p class="mb-0">
             Entrega:
@@ -81,6 +85,13 @@
       [ordenId]="datosOrden.id"
       (trabajoCreado)="alCrearTrabajo()"
     ></app-formulario-trabajo>
+  }
+
+  @if (datosOrden.estado === 'COTIZADA' && puedeAprobar()) {
+    <app-panel-aprobacion
+      [ordenId]="datosOrden.id"
+      (respuestaRegistrada)="refrescarOrden()"
+    ></app-panel-aprobacion>
   }
 
   <app-panel-cotizacion
