@@ -1,7 +1,9 @@
 @if (tokenService.estaAutenticado()) {
-  <app-navbar></app-navbar>
+  <app-shell>
+    <router-outlet></router-outlet>
+  </app-shell>
+} @else {
+  <div class="sin-sesion">
+    <router-outlet></router-outlet>
+  </div>
 }
-
-<div class="container">
-  <router-outlet></router-outlet>
-</div>

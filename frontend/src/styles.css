@@ -1,5 +1,15 @@
 /*
- * Solo el subconjunto latino. El paquete trae siete (cirílico, griego,
+ * Los @import van PRIMEROS y sin nada delante. La regla de CSS es que solo
+ * `@charset` y `@layer` pueden precederlos: cualquier otra regla arriba —un
+ * `@font-face`, por ejemplo— hace que el navegador los descarte en silencio y
+ * los tokens no lleguen nunca.
+ */
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/utilidades.css';
+
+/*
+ * Inter, solo el subconjunto latino. El paquete trae siete (cirílico, griego,
  * vietnamita…) y el navegador descargaría solo este igualmente gracias al
  * `unicode-range`, pero los otros seis viajarían en el artefacto de despliegue
  * sin que nadie los pida nunca: 166 KB de más en un plan gratuito.
@@ -17,10 +27,6 @@
     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
     U+FEFF, U+FFFD;
 }
-
-@import './styles/tokens.css';
-@import './styles/base.css';
-@import './styles/utilidades.css';
 
 /* La columna del Kanban sigue viva hasta que la entrega B la rehaga. */
 .columna-kanban {

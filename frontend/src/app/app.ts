@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Navbar } from './shared/components/navbar/navbar';
+import { Shell } from './shared/shell/shell';
 import { TokenService } from './core/services/token';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar],
+  imports: [RouterOutlet, Shell],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

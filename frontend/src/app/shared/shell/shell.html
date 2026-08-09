@@ -1,0 +1,65 @@
+<div class="shell" [class.cajon-abierto]="cajonAbierto()">
+  @if (cajonAbierto()) {
+    <div class="velo" (click)="cerrarCajon()"></div>
+  }
+
+  <aside class="barra">
+    <a class="marca" routerLink="/dashboard" (click)="cerrarCajon()">🔧 TallerPro</a>
+
+    <nav class="nav">
+      <a class="nav-item" routerLink="/dashboard" routerLinkActive="activo"
+         (click)="cerrarCajon()">Inicio</a>
+      <a class="nav-item" routerLink="/ordenes" routerLinkActive="activo"
+         [routerLinkActiveOptions]="{ exact: true }"
+         (click)="cerrarCajon()">Órdenes</a>
+      @if (esAdministrador()) {
+        <a class="nav-item" routerLink="/usuarios" routerLinkActive="activo"
+           (click)="cerrarCajon()">Usuarios</a>
+      }
+
+      @if (puedeCrearOrdenes()) {
+        <span class="nav-titulo">Acciones</span>
+        <a class="nav-item" routerLink="/ordenes/nueva" routerLinkActive="activo"
+           (click)="cerrarCajon()">Nueva orden</a>
+      }
+    </nav>
+  </aside>
+
+  <div class="principal">
+    <header class="topbar">
+      <button class="icono solo-movil" (click)="alternarCajon()" aria-label="Abrir el menú">☰</button>
+
+      <span class="crece"></span>
+
+      <button
+        class="icono"
+        (click)="temaService.alternar()"
+        [attr.aria-label]="temaService.oscuro() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+      >
+        {{ temaService.oscuro() ? '☀' : '☾' }}
+      </button>
+
+      <div class="usuario">
+        <button class="avatar" (click)="alternarMenuUsuario()" aria-label="Menú de usuario">
+          {{ iniciales() }}
+        </button>
+
+        @if (menuUsuarioAbierto()) {
+          <div class="menu">
+            <div class="menu-cabecera">
+              <div class="menu-nombre">{{ tokenService.nombreCompleto() }}</div>
+              <div class="menu-rol">{{ tokenService.rolPrincipal() }}</div>
+            </div>
+            <a class="menu-item" routerLink="/perfil/password"
+               (click)="alternarMenuUsuario()">Cambiar contraseña</a>
+            <button class="menu-item" (click)="cerrarSesion()">Salir</button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="contenido">
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>
