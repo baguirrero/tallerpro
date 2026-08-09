@@ -61,12 +61,8 @@
         <div class="col-md-4">
           <h6 class="text-muted">Servicio</h6>
           <p class="mb-1">
-            Presupuesto:
-            <strong>
-              {{ datosOrden.presupuesto
-                  ? (datosOrden.presupuesto | currency: 'PEN' : 'symbol-narrow')
-                  : 'No definido' }}
-            </strong>
+            Aprobado:
+            <strong>{{ datosOrden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}</strong>
           </p>
           <p class="mb-1">Ingreso: {{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</p>
           <p class="mb-0">
@@ -90,6 +86,19 @@
       (trabajoCreado)="alCrearTrabajo()"
     ></app-formulario-trabajo>
   }
+
+  @if (datosOrden.estado === 'COTIZADA' && puedeAprobar()) {
+    <app-panel-aprobacion
+      [ordenId]="datosOrden.id"
+      (respuestaRegistrada)="refrescarOrden()"
+    ></app-panel-aprobacion>
+  }
+
+  <app-panel-cotizacion
+    [ordenId]="datosOrden.id"
+    [totales]="datosOrden.totales"
+    (cotizacionCambiada)="refrescarOrden()"
+  ></app-panel-cotizacion>
 
   <h5 class="mb-3">Trabajos de la orden</h5>
   <app-tablero-kanban

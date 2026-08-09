@@ -9,6 +9,7 @@ import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
 import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
 import { puedeCancelar, puedeEntregar } from './estado-orden';
 import { EstadoOrden } from '../common/enums/estados.enum';
+import { calcularTotales } from './totales';
 import { VehiculosService } from '../vehiculos/vehiculos.service';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class OrdenesService {
   async crear(dto: CrearOrdenDto, usuarioId: string) {
     // El vehículo se resuelve dentro de la misma transacción que escribe la
     // orden: si la orden falla, no queda un vehículo huérfano.
-    return await this.dataSource.transaction(async (manager) => {
+    const creada = await this.dataSource.transaction(async (manager) => {
       const vehiculo = await this.vehiculosService.resolverParaOrden(
         dto,
         dto.actualizar_vehiculo === true,
@@ -33,7 +34,6 @@ export class OrdenesService {
 
       const nuevaOrden = manager.create(Orden, {
         descripcion: dto.descripcion,
-        presupuesto: dto.presupuesto,
         fecha_ingreso: dto.fecha_ingreso,
         fecha_entrega: dto.fecha_entrega,
         numero_orden: await this.generarNumeroOrden(manager),
@@ -43,17 +43,21 @@ export class OrdenesService {
 
       return await manager.save(nuevaOrden);
     });
+
+    // Se relee para devolver la misma forma que el detalle: con totales. Sin
+    // esto la API devolvería una orden sin `totales`, que el modelo declara
+    // obligatorio.
+    return await this.obtenerDetalle(creada.id);
   }
 
   async obtenerTodas(estado?: string) {
-    return await this.ordenRepository.find({
+    const ordenes = await this.ordenRepository.find({
       where: estado ? { estado } : {},
-      relations: { creado_por: true, vehiculo: true },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
       select: {
         id: true,
         numero_orden: true,
         descripcion: true,
-        presupuesto: true,
         fecha_ingreso: true,
         fecha_entrega: true,
         estado: true,
@@ -68,15 +72,42 @@ export class OrdenesService {
           propietario_telefono: true,
         },
         creado_por: { id: true, username: true, nombres: true, apellidos: true },
+        trabajos: {
+          id: true,
+          precio_mano_obra: true,
+          aprobado: true,
+          repuestos: { id: true, cantidad: true, precio_unitario: true },
+        },
       },
       order: { created_at: 'DESC' },
     });
+
+    // Los trabajos se cargan para la suma, no para viajar por la red.
+    return ordenes.map(({ trabajos, ...orden }) => ({
+      ...orden,
+      totales: calcularTotales(trabajos ?? []),
+    }));
+  }
+
+  /** Como `obtenerPorId`, pero con los totales calculados. Es lo que ve el detalle. */
+  async obtenerDetalle(id: string) {
+    const orden = await this.ordenRepository.findOne({
+      where: { id },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
+    });
+
+    if (!orden) {
+      throw new NotFoundException(`No existe la orden con id ${id}`);
+    }
+
+    const { trabajos, ...resto } = orden;
+    return { ...resto, totales: calcularTotales(trabajos ?? []) };
   }
 
   async obtenerPorId(id: string) {
     const orden = await this.ordenRepository.findOne({
       where: { id },
-      relations: { creado_por: true, vehiculo: true },
+      relations: { creado_por: true, vehiculo: true, trabajos: { repuestos: true } },
     });
 
     if (!orden) {
@@ -86,7 +117,7 @@ export class OrdenesService {
   }
 
   async actualizar(id: string, dto: ActualizarOrdenDto) {
-    return await this.dataSource.transaction(async (manager) => {
+    await this.dataSource.transaction(async (manager) => {
       const orden = await manager.findOne(Orden, {
         where: { id },
         relations: { vehiculo: true },
@@ -109,12 +140,13 @@ export class OrdenesService {
       // Campo por campo y no `Object.assign(orden, dto)`: el DTO trae ahora
       // datos del vehículo que no son columnas de la orden.
       if (dto.descripcion !== undefined) orden.descripcion = dto.descripcion;
-      if (dto.presupuesto !== undefined) orden.presupuesto = dto.presupuesto;
       if (dto.fecha_ingreso !== undefined) orden.fecha_ingreso = dto.fecha_ingreso;
       if (dto.fecha_entrega !== undefined) orden.fecha_entrega = dto.fecha_entrega;
 
       return await manager.save(orden);
     });
+
+    return await this.obtenerDetalle(id);
   }
 
   /**

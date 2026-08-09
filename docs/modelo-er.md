@@ -11,7 +11,8 @@ USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
            │       │
            │       └──< TRABAJOS
            │               ├──< COMENTARIOS
-           │               └──< ADJUNTOS
+           │               ├──< ADJUNTOS
+           │               └──< REPUESTOS
            │
            ├──< TRABAJOS (asignado_a, creado_por)
            ├──< COMENTARIOS (usuario_id)
@@ -29,13 +30,19 @@ USUARIOS ──┬── usuario_roles ── ROLES        (muchos a muchos)
 | Trabajo | Usuario | N:1 | `@ManyToOne` (asignado_a, creado_por) |
 | Comentario | Trabajo | N:1 | `@ManyToOne` con `onDelete: CASCADE` |
 | Adjunto | Trabajo | N:1 | `@ManyToOne` con `onDelete: CASCADE` |
+| Repuesto | Trabajo | N:1 | `@ManyToOne` con `onDelete: CASCADE` |
 
 ## Estados
 
-- **Orden:** `RECIBIDA` → `EN_PROCESO` → `FINALIZADA` se **derivan** de los
-  trabajos de la orden y no se pueden editar a mano. `ENTREGADA` y `CANCELADA`
-  son decisiones humanas, tienen su propio endpoint y son terminales: una vez
-  ahí, la orden ya no admite cambios en sus trabajos.
+- **Orden:** `RECIBIDA` → `COTIZADA` → `EN_PROCESO` → `FINALIZADA` se **derivan**
+  de los trabajos y no se pueden editar a mano. `ENTREGADA` y `CANCELADA` son
+  decisiones humanas, tienen su propio endpoint y son terminales.
+
+  La derivación, evaluada en orden: sin trabajos es `RECIBIDA`; si algún trabajo
+  cotizado espera respuesta es `COTIZADA`; y sobre los aprobados, todos
+  pendientes es `RECIBIDA`, todos completados es `FINALIZADA`, y cualquier mezcla
+  es `EN_PROCESO`. Solo los aprobados participan: un rechazado no impide
+  finalizar, y uno sin cotizar tampoco.
 - **Trabajo (columnas del Kanban):** `PENDIENTE` → `EN_PROCESO` → `COMPLETADO`
 - **Prioridad:** `BAJA` · `MEDIA` · `ALTA`
 
@@ -115,11 +122,22 @@ CREATE TABLE trabajos (
     prioridad VARCHAR(10) DEFAULT 'MEDIA',
     estado VARCHAR(20) DEFAULT 'PENDIENTE',
     fecha_limite DATE,
+    precio_mano_obra NUMERIC(10,2), -- NULL = sin cotizar; 0 es un precio válido
+    aprobado BOOLEAN,               -- NULL = esperando respuesta del cliente
     orden_id UUID NOT NULL REFERENCES ordenes(id) ON DELETE CASCADE,
     asignado_a UUID REFERENCES usuarios(id),
     creado_por UUID NOT NULL REFERENCES usuarios(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE repuestos (
+    id UUID PRIMARY KEY,
+    descripcion VARCHAR(200) NOT NULL,
+    cantidad INTEGER NOT NULL,
+    precio_unitario NUMERIC(10,2) NOT NULL,
+    trabajo_id UUID NOT NULL REFERENCES trabajos(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE comentarios (

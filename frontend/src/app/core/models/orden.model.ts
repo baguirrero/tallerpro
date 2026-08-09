@@ -1,22 +1,22 @@
 import { Mecanico } from './usuario.model';
 import { Vehiculo } from './vehiculo.model';
+import { Totales } from './repuesto.model';
 
 export interface Orden {
   id: string;
   numero_orden: string;
   descripcion: string;
-  presupuesto?: number;
   fecha_ingreso: string;
   fecha_entrega?: string;
   estado: string;
   vehiculo: Vehiculo;
+  totales: Totales;
   created_at: string;
   creado_por?: Mecanico;
 }
 
 export interface OrdenRequest {
   descripcion: string;
-  presupuesto?: number;
   fecha_ingreso: string;
   fecha_entrega?: string;
   placa: string;

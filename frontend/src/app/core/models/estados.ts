@@ -1,6 +1,7 @@
 
 export const ESTADOS_ORDEN = [
   'RECIBIDA',
+  'COTIZADA',
   'EN_PROCESO',
   'FINALIZADA',
   'ENTREGADA',
@@ -20,6 +21,7 @@ export const ROLES = {
 
 export const ETIQUETA_ESTADO_ORDEN: Record<string, string> = {
   RECIBIDA: 'Recibida',
+  COTIZADA: 'Cotizada',
   EN_PROCESO: 'En proceso',
   FINALIZADA: 'Finalizada',
   ENTREGADA: 'Entregada',
@@ -34,6 +36,7 @@ export const ETIQUETA_ESTADO_TRABAJO: Record<string, string> = {
 
 export const COLOR_ESTADO: Record<string, string> = {
   RECIBIDA: 'secondary',
+  COTIZADA: 'warning',
   EN_PROCESO: 'primary',
   FINALIZADA: 'success',
   ENTREGADA: 'dark',

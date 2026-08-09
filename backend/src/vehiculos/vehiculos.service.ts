@@ -5,6 +5,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { Vehiculo } from './entities/vehiculo.entity';
 import { Orden } from '../ordenes/entities/orden.entity';
 import { normalizarPlaca } from './placa';
+import { calcularTotales } from '../ordenes/totales';
 import { compararVehiculo } from './comparar-vehiculo';
 
 export interface DatosVehiculoEntrantes {
@@ -50,19 +51,31 @@ export class VehiculosService {
 
     const ordenes = await this.ordenRepository.find({
       where: { vehiculo: { id } },
+      relations: { trabajos: { repuestos: true } },
       select: {
         id: true,
         numero_orden: true,
         descripcion: true,
         estado: true,
-        presupuesto: true,
         fecha_ingreso: true,
         fecha_entrega: true,
+        trabajos: {
+          id: true,
+          precio_mano_obra: true,
+          aprobado: true,
+          repuestos: { id: true, cantidad: true, precio_unitario: true },
+        },
       },
       order: { created_at: 'DESC' },
     });
 
-    return { ...vehiculo, ordenes };
+    return {
+      ...vehiculo,
+      ordenes: ordenes.map(({ trabajos, ...orden }) => ({
+        ...orden,
+        totales: calcularTotales(trabajos ?? []),
+      })),
+    };
   }
 
   /**

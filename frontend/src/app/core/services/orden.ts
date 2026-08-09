@@ -45,6 +45,13 @@ export class OrdenService {
     return this.http.patch<Orden>(`${this.url}/${id}/cancelar`, {});
   }
 
+  registrarAprobacion(
+    id: string,
+    decisiones: { trabajo_id: string; aprobado: boolean }[],
+  ): Observable<unknown> {
+    return this.http.patch(`${this.url}/${id}/aprobacion`, { decisiones });
+  }
+
   eliminar(id: string): Observable<MensajeResponse> {
     return this.http.delete<MensajeResponse>(`${this.url}/${id}`);
   }

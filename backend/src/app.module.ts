@@ -11,6 +11,7 @@ import { VehiculosModule } from './vehiculos/vehiculos.module';
 import { OrdenesModule } from './ordenes/ordenes.module';
 import { TrabajosModule } from './trabajos/trabajos.module';
 import { ComentariosModule } from './comentarios/comentarios.module';
+import { RepuestosModule } from './repuestos/repuestos.module';
 import { AdjuntosModule } from './adjuntos/adjuntos.module';
 import { SeedModule } from './seed/seed.module';
 import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
@@ -75,6 +76,7 @@ import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
     VehiculosModule,
     OrdenesModule,
     TrabajosModule,
+    RepuestosModule,
     ComentariosModule,
     AlmacenamientoModule,
     AdjuntosModule,

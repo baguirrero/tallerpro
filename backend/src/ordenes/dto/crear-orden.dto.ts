@@ -15,11 +15,6 @@ export class CrearOrdenDto {
   @IsNotEmpty({ message: 'La descripción del servicio es obligatoria' })
   descripcion!: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'El presupuesto debe ser un número' })
-  @Min(0, { message: 'El presupuesto no puede ser negativo' })
-  presupuesto?: number;
-
   @IsDateString({}, { message: 'La fecha de ingreso no es válida' })
   fecha_ingreso!: string;
 
