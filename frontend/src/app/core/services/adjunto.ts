@@ -26,8 +26,4 @@ export class AdjuntoService {
   eliminar(id: string): Observable<MensajeResponse> {
     return this.http.delete<MensajeResponse>(`${this.url}/${id}`);
   }
-
-  obtenerUrl(nombreArchivo: string): string {
-    return `${environment.apiUrl}/uploads/${nombreArchivo}`;
-  }
 }
