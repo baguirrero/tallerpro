@@ -5,10 +5,11 @@ import { TokenService } from '../../core/services/token';
 import { AuthService } from '../../core/services/auth';
 import { TemaService } from '../../core/services/tema';
 import { ROLES } from '../../core/models/estados';
+import { Toast } from '../ui/toast';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, Toast],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })

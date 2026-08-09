@@ -1,13 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Boton } from '../../shared/ui/boton';
 import { Campo } from '../../shared/ui/campo';
+import { Esqueleto } from '../../shared/ui/esqueleto';
+import { EstadoVacio } from '../../shared/ui/estado-vacio';
 import { Pastilla } from '../../shared/ui/pastilla';
 import { Select } from '../../shared/ui/select';
 import { Tarjeta } from '../../shared/ui/tarjeta';
+import { ToastService } from '../../shared/ui/toast';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [Boton, Campo, Pastilla, Select, Tarjeta],
+  imports: [Boton, Campo, Esqueleto, EstadoVacio, Pastilla, Select, Tarjeta],
   templateUrl: './catalogo.html',
   styles: `
     .grupo { margin-bottom: var(--e8); }
@@ -21,6 +24,8 @@ import { Tarjeta } from '../../shared/ui/tarjeta';
   `,
 })
 export class Catalogo {
+  readonly toast = inject(ToastService);
+
   readonly estados = signal<string[]>([
     'RECIBIDA',
     'COTIZADA',
