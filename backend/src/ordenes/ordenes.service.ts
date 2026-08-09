@@ -1,7 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Orden } from './entities/orden.entity';
+import { Trabajo } from '../trabajos/entities/trabajo.entity';
+import { AdjuntosService } from '../adjuntos/adjuntos.service';
 import { CrearOrdenDto } from './dto/crear-orden.dto';
 import { ActualizarOrdenDto } from './dto/actualizar-orden.dto';
 import { formatearNumeroOrden, SECUENCIA_NUMERO_ORDEN } from './numero-orden';
@@ -13,6 +15,8 @@ export class OrdenesService {
   constructor(
     @InjectRepository(Orden)
     private readonly ordenRepository: Repository<Orden>,
+    private readonly dataSource: DataSource,
+    private readonly adjuntosService: AdjuntosService,
   ) {}
 
   async crear(dto: CrearOrdenDto, usuarioId: string) {
@@ -102,7 +106,23 @@ export class OrdenesService {
 
   async eliminar(id: string) {
     const orden = await this.obtenerPorId(id);
-    await this.ordenRepository.remove(orden);
+
+    await this.dataSource.transaction(async (manager) => {
+      const trabajos = await manager.find(Trabajo, {
+        where: { orden: { id } },
+        select: { id: true },
+      });
+
+      // Las filas de trabajos, comentarios y adjuntos las arrastra el
+      // ON DELETE CASCADE; los archivos del almacenamiento hay que borrarlos.
+      await this.adjuntosService.eliminarPorTrabajos(
+        trabajos.map((trabajo) => trabajo.id),
+        manager,
+      );
+
+      await manager.delete(Orden, { id: orden.id });
+    });
+
     return { mensaje: 'Orden eliminada correctamente' };
   }
 

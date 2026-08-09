@@ -12,6 +12,7 @@ import { ActualizarTrabajoDto } from './dto/actualizar-trabajo.dto';
 import { EstadoTrabajo, NombreRol } from '../common/enums/estados.enum';
 import { Orden } from '../ordenes/entities/orden.entity';
 import { derivarEstado, esTerminal } from '../ordenes/estado-orden';
+import { AdjuntosService } from '../adjuntos/adjuntos.service';
 
 @Injectable()
 export class TrabajosService {
@@ -19,6 +20,7 @@ export class TrabajosService {
     @InjectRepository(Trabajo)
     private readonly trabajoRepository: Repository<Trabajo>,
     private readonly dataSource: DataSource,
+    private readonly adjuntosService: AdjuntosService,
   ) {}
 
   /**
@@ -186,6 +188,8 @@ export class TrabajosService {
     const trabajo = await this.obtenerPorId(id);
 
     return await this.conOrdenBloqueada(trabajo.orden.id, async (manager) => {
+      // Las filas se van solas por el ON DELETE CASCADE; los archivos no.
+      await this.adjuntosService.eliminarPorTrabajos([id], manager);
       await manager.delete(Trabajo, { id });
       return { mensaje: 'Trabajo eliminado correctamente' };
     });
