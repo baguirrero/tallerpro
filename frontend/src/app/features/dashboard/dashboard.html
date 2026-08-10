@@ -1,87 +1,107 @@
-<h3 class="mb-1">Hola, {{ tokenService.nombreCompleto() }}</h3>
-<p class="text-muted">Resumen del taller</p>
+<h1 class="saludo">Hola, {{ tokenService.nombreCompleto() }}</h1>
+<p class="texto-suave" style="margin-bottom: var(--e6)">Resumen del taller</p>
 
 @if (mensajeError()) {
-  <div class="alert alert-danger">{{ mensajeError() }}</div>
+  <div class="bloque-error">{{ mensajeError() }}</div>
 }
 
 @if (cargando()) {
-  <app-spinner></app-spinner>
-} @else if (estadisticas(); as datos) {
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card text-bg-primary shadow-sm">
-        <div class="card-body text-center">
-          <h2 class="mb-0">{{ datos.total }}</h2>
-          <div>Órdenes totales</div>
-        </div>
-      </div>
-    </div>
-
-    @for (fila of datos.porEstado; track fila.estado) {
-      <div class="col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ fila.cantidad }}</h2>
-            <div class="text-muted">{{ obtenerEtiqueta(fila.estado) }}</div>
-          </div>
-        </div>
-      </div>
+  <div class="cifras">
+    @for (hueco of [1, 2, 3]; track hueco) {
+      <app-esqueleto variante="tarjeta" [repeticiones]="1"></app-esqueleto>
     }
   </div>
+} @else {
+  <div class="cifras">
+    @for (dato of atencion(); track dato.estado) {
+      @if (dato.cantidad > 0) {
+        <a class="cifra" [routerLink]="['/ordenes']" [queryParams]="{ estado: dato.estado }">
+          <span class="numero">{{ dato.cantidad }}</span>
+          <span class="rotulo">{{ dato.titulo }}</span>
+          <span class="flecha" aria-hidden="true">→</span>
+        </a>
+      } @else {
+        <div class="cifra vacia">
+          <span class="numero">0</span>
+          <span class="rotulo">{{ dato.titulo }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  <p class="tira">
+    @for (dato of resto(); track dato.estado) {
+      <!-- Misma regla que las tarjetas: en cero no hay nada que ir a ver. -->
+      @if (dato.cantidad > 0) {
+        <a [routerLink]="['/ordenes']" [queryParams]="{ estado: dato.estado }">
+          {{ dato.titulo }} <strong>{{ dato.cantidad }}</strong>
+        </a>
+      } @else {
+        <span class="vacio">{{ dato.titulo }} <strong>0</strong></span>
+      }
+    }
+    <a routerLink="/ordenes"
+      >Total <strong>{{ total() }}</strong></a
+    >
+  </p>
 }
 
-<div class="card shadow-sm">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span class="fw-semibold">Mis trabajos asignados</span>
-    <span class="badge text-bg-secondary">{{ misTrabajos().length }}</span>
+<div class="panel">
+  <div class="panel-cab">
+    <span class="etiqueta">Mis trabajos asignados</span>
+    <span class="conteo">{{ misTrabajos().length }}</span>
   </div>
 
-  <div class="card-body">
-    @if (misTrabajos().length === 0) {
-      <p class="text-muted mb-0">No tiene trabajos asignados en este momento.</p>
-    } @else {
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead>
+  @if (misTrabajos().length === 0) {
+    <app-estado-vacio
+      icono="🔧"
+      titulo="Sin trabajos asignados"
+      mensaje="Cuando le asignen un trabajo, aparecerá acá."
+    ></app-estado-vacio>
+  } @else {
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Trabajo</th>
+            <th>Vehículo</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th class="num">Fecha límite</th>
+            <th class="num"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (trabajo of misTrabajos(); track trabajo.id) {
             <tr>
-              <th>Trabajo</th>
-              <th>Vehículo</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Fecha límite</th>
-              <th></th>
+              <td>{{ trabajo.titulo }}</td>
+              <td>
+                @if (trabajo.orden; as orden) {
+                  <span class="numero-orden">{{ orden.numero_orden }}</span>
+                  <div class="texto-suave texto-menor">
+                    {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }} ·
+                    {{ orden.vehiculo.placa }}
+                  </div>
+                } @else {
+                  <span class="texto-suave">—</span>
+                }
+              </td>
+              <td><app-prioridad [valor]="trabajo.prioridad"></app-prioridad></td>
+              <td><app-pastilla [estado]="trabajo.estado"></app-pastilla></td>
+              <td class="num">
+                {{
+                  trabajo.fecha_limite ? (trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC') : '—'
+                }}
+              </td>
+              <td class="num">
+                @if (trabajo.orden; as orden) {
+                  <a class="enlace" [routerLink]="['/ordenes', orden.id]">Ver orden</a>
+                }
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (trabajo of misTrabajos(); track trabajo.id) {
-              <tr>
-                <td>{{ trabajo.titulo }}</td>
-                <td>
-                  @if (trabajo.orden; as orden) {
-                    <span class="fw-semibold">{{ orden.numero_orden }}</span>
-                    <div class="small text-muted">
-                      {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }} · {{ orden.vehiculo.placa }}
-                    </div>
-                  }
-                </td>
-                <td><app-badge-estado [estado]="trabajo.prioridad"></app-badge-estado></td>
-                <td><app-badge-estado [estado]="trabajo.estado"></app-badge-estado></td>
-                <td>
-                  {{ trabajo.fecha_limite ? (trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC') : '—' }}
-                </td>
-                <td>
-                  @if (trabajo.orden; as orden) {
-                    <a class="btn btn-sm btn-outline-primary" [routerLink]="['/ordenes', orden.id]">
-                      Ver orden
-                    </a>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

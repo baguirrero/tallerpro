@@ -1,0 +1,142 @@
+.migas {
+  display: inline-block;
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+  text-decoration: none;
+  margin-bottom: var(--e2);
+}
+.migas:hover {
+  color: var(--acento);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e4);
+  flex-wrap: wrap;
+  margin-bottom: var(--e2);
+}
+.identidad {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+}
+.numero {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-primario);
+}
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+}
+
+/* Los datos van sin rótulo: «ABC-123» junto a «Toyota Yaris» no necesita que le
+   digan que es una placa. Los separa un punto medio, no una etiqueta. */
+.datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  font-size: var(--t-tabla);
+  color: var(--texto-suave);
+  margin-bottom: var(--e1);
+}
+/* El «/ ''» es el texto alternativo del contenido generado: sin él, el lector
+   de pantalla lee «· JKL220» como si el punto fuera parte de la placa. */
+.datos > * + *::before {
+  content: '·' / '';
+  margin-right: var(--e3);
+  color: var(--borde-fuerte);
+}
+.datos strong {
+  color: var(--texto-primario);
+  font-variant-numeric: tabular-nums;
+}
+
+.descripcion {
+  font-size: var(--t-tabla);
+  color: var(--texto-suave);
+  margin: var(--e3) 0 var(--e4);
+  max-width: 70ch;
+}
+
+.franja {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  flex-wrap: wrap;
+  background: var(--aviso-fondo);
+  color: var(--aviso-texto);
+  border: 1px solid var(--aviso-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+  font-weight: 500;
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}
+
+.pestanas {
+  display: flex;
+  gap: var(--e1);
+  border-bottom: 1px solid var(--borde);
+  margin-bottom: var(--e4);
+}
+.pestana {
+  font-family: var(--fuente);
+  font-size: var(--t-tabla);
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--e2) var(--e3);
+  cursor: pointer;
+  transition: color var(--dur-rapida) var(--ease-suave);
+}
+.pestana:hover {
+  color: var(--texto-primario);
+}
+.pestana.activa {
+  color: var(--acento);
+  border-bottom-color: var(--acento);
+}
+
+.barra-trabajos {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--e3);
+}
+
+.detalle-trabajo {
+  margin-top: var(--e6);
+}
+.detalle-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--e3);
+}
+
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--t-tabla);
+}
+.enlace:hover {
+  text-decoration: underline;
+}

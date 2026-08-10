@@ -1,0 +1,142 @@
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e4);
+}
+.titulo {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  color: var(--texto-primario);
+}
+
+.boton-nueva {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--t-base);
+  font-weight: 600;
+  line-height: 1;
+  min-height: 36px;
+  padding: var(--e2) var(--e4);
+  border-radius: var(--r-sm);
+  background: var(--acento);
+  color: var(--acento-texto);
+  text-decoration: none;
+  transition: background var(--dur-rapida) var(--ease-suave);
+}
+.boton-nueva:hover {
+  background: var(--acento-hover);
+}
+
+/* En pantallas angostas se desplaza en horizontal; plegarla en un desplegable
+   sería volver al select de antes con más código. */
+.pestanas {
+  display: flex;
+  gap: var(--e1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--borde);
+  margin-bottom: var(--e4);
+}
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e2);
+  font-family: var(--fuente);
+  font-size: var(--t-tabla);
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--e2) var(--e3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--dur-rapida) var(--ease-suave);
+}
+.pestana:hover {
+  color: var(--texto-primario);
+}
+.pestana.activa {
+  color: var(--acento);
+  border-bottom-color: var(--acento);
+}
+
+.conteo {
+  font-size: var(--t-etiqueta);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-suave);
+  background: var(--superficie-hundida);
+  border-radius: var(--r-full);
+  padding: 0 var(--e2);
+}
+.pestana.activa .conteo {
+  background: var(--acento-suave);
+  color: var(--acento-hover);
+}
+
+.barra-busqueda {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  margin-bottom: var(--e4);
+}
+.barra-busqueda app-campo {
+  display: block;
+  flex: 1;
+  max-width: 420px;
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}
+
+.panel {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-1);
+  overflow: hidden;
+}
+
+.tabla tbody tr.clicable {
+  cursor: pointer;
+}
+.numero-orden {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-primario);
+  text-decoration: none;
+}
+.numero-orden:hover {
+  color: var(--acento);
+  text-decoration: underline;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--e3);
+  white-space: nowrap;
+}
+/* Las columnas de datos se llevan el ancho; las acciones ocupan lo que miden. */
+.tabla th:last-child,
+.tabla td:last-child {
+  width: 1%;
+}
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--t-menor);
+}
+.enlace:hover {
+  text-decoration: underline;
+}

@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 
 import { TrabajoService } from '../../../core/services/trabajo';
@@ -11,18 +11,32 @@ import {
   ROLES,
   TRANSICIONES_TRABAJO,
 } from '../../../core/models/estados';
-import { Spinner } from '../../../shared/components/spinner/spinner';
-import { BadgeEstado } from '../../../shared/components/badge-estado/badge-estado';
+import { Prioridad } from '../../../shared/ui/prioridad';
+import { Boton } from '../../../shared/ui/boton';
+import { Campo } from '../../../shared/ui/campo';
+import { Modal } from '../../../shared/ui/modal';
+import { Esqueleto } from '../../../shared/ui/esqueleto';
+import { ToastService } from '../../../shared/ui/toast';
+
+/**
+ * `motivo_espera` está sostenido por un CHECK en la base desde la fase 2b, así
+ * que una cadena en blanco no es un motivo: es un 400 evitable.
+ */
+export function motivoLimpio(texto: string): string | null {
+  const limpio = texto.trim();
+  return limpio.length > 0 ? limpio : null;
+}
 
 @Component({
   selector: 'app-tablero-kanban',
-  imports: [DatePipe, Spinner, BadgeEstado],
+  imports: [DatePipe, Prioridad, Boton, Campo, Modal, Esqueleto],
   templateUrl: './tablero-kanban.html',
-  styles: ``,
+  styleUrl: './tablero-kanban.css',
 })
 export class TableroKanban implements OnInit {
   private readonly trabajoService = inject(TrabajoService);
   private readonly tokenService = inject(TokenService);
+  private readonly toast = inject(ToastService);
 
   readonly ordenId = input.required<string>();
 
@@ -35,6 +49,11 @@ export class TableroKanban implements OnInit {
   readonly cargando = signal<boolean>(true);
   readonly mensajeError = signal<string | null>(null);
   readonly trabajos = signal<Trabajo[]>([]);
+
+  /** El movimiento que espera el motivo. Mientras hay uno, el modal está abierto. */
+  readonly esperandoMotivo = signal<Trabajo | null>(null);
+  readonly motivo = signal<string>('');
+  readonly motivoValido = computed(() => motivoLimpio(this.motivo()) !== null);
 
   readonly columnas = ESTADOS_TRABAJO;
   readonly etiquetas = ETIQUETA_ESTADO_TRABAJO;
@@ -85,21 +104,34 @@ export class TableroKanban implements OnInit {
   /** Si a una arista le falta la etiqueta, se muestra el nombre del estado
    *  destino: un botón sin texto sería peor que uno con el texto crudo. */
   accion(trabajo: Trabajo, destino: string): string {
-    return (
-      ACCION_TRANSICION[`${trabajo.estado}->${destino}`] ?? this.etiquetas[destino] ?? destino
-    );
+    return ACCION_TRANSICION[`${trabajo.estado}->${destino}`] ?? this.etiquetas[destino] ?? destino;
   }
 
   mover(trabajo: Trabajo, destino: string): void {
-    this.mensajeError.set(null);
-
-    let motivo: string | undefined;
     if (destino === 'ESPERANDO_REPUESTO') {
-      const respuesta = prompt('¿Qué repuesto se está esperando?')?.trim();
-      if (!respuesta) return;
-      motivo = respuesta;
+      this.motivo.set('');
+      this.esperandoMotivo.set(trabajo);
+      return;
     }
 
+    this.aplicar(trabajo, destino);
+  }
+
+  confirmarMotivo(): void {
+    const trabajo = this.esperandoMotivo();
+    const motivo = motivoLimpio(this.motivo());
+    if (!trabajo || !motivo) return;
+
+    this.cerrarMotivo();
+    this.aplicar(trabajo, 'ESPERANDO_REPUESTO', motivo);
+  }
+
+  cerrarMotivo(): void {
+    this.esperandoMotivo.set(null);
+    this.motivo.set('');
+  }
+
+  private aplicar(trabajo: Trabajo, destino: string, motivo?: string): void {
     this.trabajoService.cambiarEstado(trabajo.id, destino, motivo).subscribe({
       next: (actualizado) => {
         this.trabajos.update((lista) =>
@@ -118,7 +150,7 @@ export class TableroKanban implements OnInit {
         this.estadoCambiado.emit();
       },
       error: (error) => {
-        this.mensajeError.set(error.error?.message ?? 'No se pudo cambiar el estado del trabajo');
+        this.toast.error(error.error?.message ?? 'No se pudo cambiar el estado del trabajo');
       },
     });
   }

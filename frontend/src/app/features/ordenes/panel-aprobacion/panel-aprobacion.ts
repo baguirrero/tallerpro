@@ -4,16 +4,20 @@ import { CurrencyPipe } from '@angular/common';
 import { OrdenService } from '../../../core/services/orden';
 import { TrabajoService } from '../../../core/services/trabajo';
 import { Trabajo } from '../../../core/models/trabajo.model';
+import { Tarjeta } from '../../../shared/ui/tarjeta';
+import { Boton } from '../../../shared/ui/boton';
+import { ToastService } from '../../../shared/ui/toast';
 
 @Component({
   selector: 'app-panel-aprobacion',
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, Tarjeta, Boton],
   templateUrl: './panel-aprobacion.html',
-  styles: ``,
+  styleUrl: './panel-aprobacion.css',
 })
 export class PanelAprobacion implements OnInit {
   private readonly ordenService = inject(OrdenService);
   private readonly trabajoService = inject(TrabajoService);
+  private readonly toast = inject(ToastService);
 
   readonly ordenId = input.required<string>();
 
@@ -45,9 +49,12 @@ export class PanelAprobacion implements OnInit {
     this.decisiones.update((actual) => ({ ...actual, [trabajoId]: aprobado }));
   }
 
+  decision(trabajoId: string): boolean | undefined {
+    return this.decisiones()[trabajoId];
+  }
+
   registrar(): void {
     this.guardando.set(true);
-    this.mensajeError.set(null);
 
     const decisiones = Object.entries(this.decisiones()).map(([trabajo_id, aprobado]) => ({
       trabajo_id,
@@ -57,11 +64,12 @@ export class PanelAprobacion implements OnInit {
     this.ordenService.registrarAprobacion(this.ordenId(), decisiones).subscribe({
       next: () => {
         this.guardando.set(false);
+        this.toast.exito('Se registró la respuesta del cliente');
         this.respuestaRegistrada.emit();
       },
       error: (error) => {
         this.guardando.set(false);
-        this.mensajeError.set(error.error?.message ?? 'No se pudo registrar la respuesta');
+        this.toast.error(error.error?.message ?? 'No se pudo registrar la respuesta');
       },
     });
   }

@@ -15,6 +15,11 @@
   color: var(--texto-suave);
 }
 
+/* En pantallas angostas la tabla no cabe. Sin esto el contenedor la recorta y
+   las últimas columnas quedan inalcanzables. */
+.tabla-envoltura { overflow-x: auto; }
+.tabla-envoltura .tabla { min-width: 640px; }
+
 .tabla { width: 100%; border-collapse: collapse; font-size: var(--t-tabla); }
 .tabla th {
   text-align: left;

@@ -1,83 +1,122 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h3 class="mb-0">Órdenes de servicio</h3>
+<div class="cabecera">
+  <h1 class="titulo">Órdenes de servicio</h1>
   @if (puedeEditar()) {
-    <a class="btn btn-primary" routerLink="/ordenes/nueva">+ Nueva orden</a>
+    <a class="boton-nueva" routerLink="/ordenes/nueva">+ Nueva orden</a>
   }
 </div>
 
-<div class="card shadow-sm mb-3">
-  <div class="card-body py-2">
-    <div class="row align-items-center">
-      <div class="col-md-4">
-        <label class="form-label mb-1" for="filtro">Filtrar por estado</label>
-        <select id="filtro" class="form-select" (change)="cambiarFiltro($event)">
-          <option value="">Todos los estados</option>
-          @for (estado of estadosDisponibles; track estado) {
-            <option [value]="estado">{{ etiquetas[estado] }}</option>
-          }
-        </select>
-      </div>
-    </div>
-  </div>
+<div class="pestanas" role="tablist">
+  @for (pestana of pestanas(); track pestana.valor) {
+    <button
+      class="pestana"
+      role="tab"
+      [class.activa]="filtroEstado() === pestana.valor"
+      [attr.aria-selected]="filtroEstado() === pestana.valor"
+      (click)="cambiarEstado(pestana.valor)"
+    >
+      {{ pestana.texto }}
+      @if (pestana.cantidad !== null) {
+        <span class="conteo">{{ pestana.cantidad }}</span>
+      }
+    </button>
+  }
+</div>
+
+<div class="barra-busqueda">
+  <app-campo
+    marcador="Buscar por n° de orden, placa o propietario"
+    [valor]="busqueda()"
+    (valorCambia)="busqueda.set($event)"
+  ></app-campo>
+
+  @if (buscando()) {
+    <span class="texto-suave texto-menor"> {{ visibles().length }} de {{ ordenes().length }} </span>
+  }
 </div>
 
 @if (mensajeError()) {
-  <div class="alert alert-danger">{{ mensajeError() }}</div>
+  <div class="bloque-error">{{ mensajeError() }}</div>
 }
 
 @if (cargando()) {
-  <app-spinner></app-spinner>
-} @else if (ordenes().length === 0) {
-  <div class="alert alert-info">No hay órdenes registradas con ese criterio.</div>
+  <div class="panel" style="padding: var(--e4)">
+    <app-esqueleto variante="fila" [repeticiones]="6"></app-esqueleto>
+  </div>
+} @else if (visibles().length === 0) {
+  <div class="panel">
+    @if (buscando() || filtroEstado()) {
+      <app-estado-vacio
+        icono="🔍"
+        titulo="Ninguna orden coincide"
+        mensaje="Probá con otro texto o mirá todos los estados."
+      >
+        <app-boton variante="secundario" (pulsar)="limpiarFiltros()">Limpiar filtros</app-boton>
+      </app-estado-vacio>
+    } @else {
+      <app-estado-vacio
+        icono="📋"
+        titulo="Todavía no hay órdenes"
+        mensaje="Cuando ingrese un vehículo al taller, su orden aparecerá acá."
+      >
+        @if (puedeEditar()) {
+          <a class="boton-nueva" routerLink="/ordenes/nueva">+ Nueva orden</a>
+        }
+      </app-estado-vacio>
+    }
+  </div>
 } @else {
-  <div class="card shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+  <div class="panel">
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
           <tr>
             <th>N° Orden</th>
             <th>Vehículo</th>
             <th>Cliente</th>
-            <th>Ingreso</th>
-            <th>Aprobado</th>
+            <th class="num">Ingreso</th>
+            <th class="num">Aprobado</th>
             <th>Estado</th>
-            <th class="text-end">Acciones</th>
+            <th class="num">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          @for (orden of ordenes(); track orden.id) {
-            <tr>
-              <td class="fw-semibold">{{ orden.numero_orden }}</td>
+          @for (orden of visibles(); track orden.id) {
+            <tr class="clicable" (click)="abrirDetalle(orden)">
+              <td>
+                <!-- Enlace de verdad para que Tab lo alcance y se pueda abrir aparte;
+                     el clic en la fila es una comodidad además de esto, no en su lugar. -->
+                <a
+                  class="numero-orden"
+                  [routerLink]="['/ordenes', orden.id]"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ orden.numero_orden }}
+                </a>
+              </td>
               <td>
                 {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }}
-                <div class="small text-muted">{{ orden.vehiculo.placa }}</div>
+                <div class="texto-suave texto-menor">{{ orden.vehiculo.placa }}</div>
               </td>
               <td>
                 {{ orden.vehiculo.propietario_nombre }}
-                <div class="small text-muted">{{ orden.vehiculo.propietario_telefono }}</div>
+                <div class="texto-suave texto-menor">{{ orden.vehiculo.propietario_telefono }}</div>
               </td>
-              <td>{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</td>
-              <td>
-                {{ orden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}
-              </td>
-              <td><app-badge-estado [estado]="orden.estado"></app-badge-estado></td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" [routerLink]="['/ordenes', orden.id]">
-                  Ver
-                </a>
-                @if (puedeEditar()) {
-                  <a
-                    class="btn btn-sm btn-outline-secondary ms-1"
-                    [routerLink]="['/ordenes', orden.id, 'editar']"
-                  >
-                    Editar
-                  </a>
-                }
-                @if (puedeEliminar()) {
-                  <button class="btn btn-sm btn-outline-danger ms-1" (click)="eliminar(orden)">
-                    Eliminar
-                  </button>
-                }
+              <td class="num">{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+              <td class="num">{{ orden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}</td>
+              <td><app-pastilla [estado]="orden.estado"></app-pastilla></td>
+              <td (click)="$event.stopPropagation()">
+                <!-- El flex va adentro: aplicado al td le quitaría el table-cell y
+                     partiría la línea inferior de la fila. -->
+                <div class="acciones">
+                  @if (puedeEditar()) {
+                    <a class="enlace" [routerLink]="['/ordenes', orden.id, 'editar']">Editar</a>
+                  }
+                  @if (puedeEliminar()) {
+                    <app-boton variante="fantasma" tamano="sm" (pulsar)="ordenAEliminar.set(orden)">
+                      Eliminar
+                    </app-boton>
+                  }
+                </div>
               </td>
             </tr>
           }
@@ -86,3 +125,13 @@
     </div>
   </div>
 }
+
+<app-confirmar
+  [abierto]="ordenAEliminar() !== null"
+  titulo="Eliminar la orden"
+  [mensaje]="'¿Seguro que desea eliminar la orden ' + (ordenAEliminar()?.numero_orden ?? '') + '?'"
+  [peligro]="true"
+  textoConfirmar="Eliminar"
+  (confirmar)="confirmarEliminacion()"
+  (cancelar)="ordenAEliminar.set(null)"
+></app-confirmar>

@@ -1,121 +1,163 @@
-@if (mensajeError()) {
-  <div class="alert alert-danger">{{ mensajeError() }}</div>
-  <a class="btn btn-outline-secondary" routerLink="/ordenes">Volver al listado</a>
-}
-
 @if (cargando()) {
-  <app-spinner></app-spinner>
+  <app-esqueleto variante="texto" [repeticiones]="3"></app-esqueleto>
+} @else if (mensajeError()) {
+  <div class="bloque-error">{{ mensajeError() }}</div>
+  <a class="enlace" routerLink="/ordenes">← Volver al listado</a>
 } @else if (orden(); as datosOrden) {
-  <div class="card shadow-sm mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <span class="fw-bold fs-5">{{ datosOrden.numero_orden }}</span>
-        <app-badge-estado class="ms-2" [estado]="datosOrden.estado"></app-badge-estado>
+  <a class="migas" routerLink="/ordenes">← Órdenes</a>
 
-        @if (puedeEntregar()) {
-          <button class="btn btn-sm btn-success ms-2" [disabled]="procesando()"
-                  (click)="entregar()">
-            Entregar
-          </button>
-        }
-        @if (puedeCancelar()) {
-          <button class="btn btn-sm btn-outline-danger ms-2" [disabled]="procesando()"
-                  (click)="cancelar()">
-            Cancelar
-          </button>
-        }
-      </div>
-      <div>
-        <a class="btn btn-sm btn-outline-secondary" routerLink="/ordenes">Volver</a>
-        @if (puedeEditar()) {
-          <a class="btn btn-sm btn-outline-primary ms-1"
-             [routerLink]="['/ordenes', datosOrden.id, 'editar']">
-            Editar orden
-          </a>
-        }
-      </div>
+  <div class="cabecera">
+    <div class="identidad">
+      <h1 class="numero">{{ datosOrden.numero_orden }}</h1>
+      <app-pastilla [estado]="datosOrden.estado"></app-pastilla>
     </div>
 
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-4">
-          <h6 class="text-muted">Vehículo</h6>
-          <p class="mb-1">
-            <strong>{{ datosOrden.vehiculo.marca }} {{ datosOrden.vehiculo.modelo }}</strong>
-          </p>
-          <p class="mb-1">
-            Placa:
-            <a [routerLink]="['/vehiculos', datosOrden.vehiculo.id]">
-              {{ datosOrden.vehiculo.placa }}
-            </a>
-          </p>
-          <p class="mb-0">Año: {{ datosOrden.vehiculo.anio ?? '—' }}</p>
-        </div>
-
-        <div class="col-md-4">
-          <h6 class="text-muted">Propietario</h6>
-          <p class="mb-1">{{ datosOrden.vehiculo.propietario_nombre }}</p>
-          <p class="mb-0">Teléfono: {{ datosOrden.vehiculo.propietario_telefono }}</p>
-        </div>
-
-        <div class="col-md-4">
-          <h6 class="text-muted">Servicio</h6>
-          <p class="mb-1">
-            Aprobado:
-            <strong>{{ datosOrden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}</strong>
-          </p>
-          <p class="mb-1">Ingreso: {{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</p>
-          <p class="mb-0">
-            Entrega:
-            {{ datosOrden.fecha_entrega
-                ? (datosOrden.fecha_entrega | date: 'dd/MM/yyyy' : 'UTC')
-                : 'Por definir' }}
-          </p>
-        </div>
-      </div>
-
-      <hr />
-      <h6 class="text-muted">Descripción</h6>
-      <p class="mb-0">{{ datosOrden.descripcion }}</p>
+    <div class="acciones">
+      @if (puedeEditar()) {
+        <a class="enlace" [routerLink]="['/ordenes', datosOrden.id, 'editar']">Editar</a>
+      }
+      @if (puedeEntregar()) {
+        <app-boton variante="primario" tamano="sm" [cargando]="procesando()" (pulsar)="entregar()">
+          Entregar
+        </app-boton>
+      }
+      @if (puedeCancelar()) {
+        <app-boton
+          variante="secundario"
+          tamano="sm"
+          [deshabilitado]="procesando()"
+          (pulsar)="confirmandoCancelacion.set(true)"
+        >
+          Cancelar
+        </app-boton>
+      }
     </div>
   </div>
 
-  @if (puedeCrearTrabajos()) {
-    <app-formulario-trabajo
-      [ordenId]="datosOrden.id"
-      (trabajoCreado)="alCrearTrabajo()"
-    ></app-formulario-trabajo>
+  <p class="datos">
+    <span>{{ datosOrden.vehiculo.marca }} {{ datosOrden.vehiculo.modelo }}</span>
+    @if (datosOrden.vehiculo.anio) {
+      <span>{{ datosOrden.vehiculo.anio }}</span>
+    }
+    <a class="enlace" [routerLink]="['/vehiculos', datosOrden.vehiculo.id]">
+      {{ datosOrden.vehiculo.placa }}
+    </a>
+    <span>{{ datosOrden.vehiculo.propietario_nombre }}</span>
+    <span>{{ datosOrden.vehiculo.propietario_telefono }}</span>
+  </p>
+
+  <p class="datos">
+    <span
+      >Ingreso <strong>{{ datosOrden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</strong></span
+    >
+    <span>
+      Entrega
+      <strong>
+        {{
+          datosOrden.fecha_entrega ? (datosOrden.fecha_entrega | date: 'dd/MM/yyyy' : 'UTC') : '—'
+        }}
+      </strong>
+    </span>
+    <span>
+      Aprobado
+      <strong>{{ datosOrden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}</strong>
+    </span>
+  </p>
+
+  @if (datosOrden.descripcion) {
+    <p class="descripcion">{{ datosOrden.descripcion }}</p>
   }
 
-  @if (datosOrden.estado === 'COTIZADA' && puedeAprobar()) {
-    <app-panel-aprobacion
-      [ordenId]="datosOrden.id"
-      (respuestaRegistrada)="refrescarOrden()"
-    ></app-panel-aprobacion>
-  }
-
-  <app-panel-cotizacion
-    [ordenId]="datosOrden.id"
-    [totales]="datosOrden.totales"
-    (cotizacionCambiada)="refrescarOrden()"
-  ></app-panel-cotizacion>
-
-  <h5 class="mb-3">Trabajos de la orden</h5>
-  <app-tablero-kanban
-    [ordenId]="datosOrden.id"
-    (trabajoSeleccionado)="alSeleccionarTrabajo($event)"
-    (estadoCambiado)="refrescarOrden()"
-  ></app-tablero-kanban>
-
-  @if (trabajoSeleccionado(); as trabajo) {
-    <div class="mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="mb-0">Detalle del trabajo</h5>
-        <button class="btn btn-sm btn-outline-secondary" (click)="cerrarDetalleTrabajo()">
-          Cerrar
-        </button>
-      </div>
-      <app-detalle-trabajo [trabajo]="trabajo"></app-detalle-trabajo>
+  @if (hayQueAprobar()) {
+    <div class="franja">
+      <span>⚠ El cliente aún no responde la cotización.</span>
+      <app-boton variante="secundario" tamano="sm" (pulsar)="irACotizacion()">
+        Registrar respuesta
+      </app-boton>
     </div>
   }
+
+  <div class="pestanas" role="tablist">
+    <button
+      class="pestana"
+      role="tab"
+      [class.activa]="pestana() === 'trabajos'"
+      [attr.aria-selected]="pestana() === 'trabajos'"
+      (click)="pestana.set('trabajos')"
+    >
+      Trabajos
+    </button>
+    <button
+      class="pestana"
+      role="tab"
+      [class.activa]="pestana() === 'cotizacion'"
+      [attr.aria-selected]="pestana() === 'cotizacion'"
+      (click)="pestana.set('cotizacion')"
+    >
+      Cotización
+    </button>
+  </div>
+
+  @if (pestana() === 'trabajos') {
+    @if (puedeCrearTrabajos()) {
+      <div class="barra-trabajos">
+        <app-boton
+          variante="secundario"
+          tamano="sm"
+          (pulsar)="formularioAbierto.set(!formularioAbierto())"
+        >
+          {{ formularioAbierto() ? 'Cerrar' : '+ Trabajo' }}
+        </app-boton>
+      </div>
+
+      @if (formularioAbierto()) {
+        <app-formulario-trabajo
+          [ordenId]="datosOrden.id"
+          (trabajoCreado)="alCrearTrabajo()"
+        ></app-formulario-trabajo>
+      }
+    }
+
+    <app-tablero-kanban
+      [ordenId]="datosOrden.id"
+      (trabajoSeleccionado)="alSeleccionarTrabajo($event)"
+      (estadoCambiado)="refrescarOrden()"
+    ></app-tablero-kanban>
+
+    @if (trabajoSeleccionado(); as trabajo) {
+      <div class="detalle-trabajo">
+        <div class="detalle-cab">
+          <span class="etiqueta">Detalle del trabajo</span>
+          <app-boton variante="fantasma" tamano="sm" (pulsar)="cerrarDetalleTrabajo()">
+            Cerrar
+          </app-boton>
+        </div>
+        <app-detalle-trabajo [trabajo]="trabajo"></app-detalle-trabajo>
+      </div>
+    }
+  } @else {
+    @if (hayQueAprobar()) {
+      <app-panel-aprobacion
+        [ordenId]="datosOrden.id"
+        (respuestaRegistrada)="refrescarOrden()"
+      ></app-panel-aprobacion>
+    }
+
+    <app-panel-cotizacion
+      [ordenId]="datosOrden.id"
+      [totales]="datosOrden.totales"
+      (cotizacionCambiada)="refrescarOrden()"
+    ></app-panel-cotizacion>
+  }
+
+  <app-confirmar
+    [abierto]="confirmandoCancelacion()"
+    titulo="Cancelar la orden"
+    mensaje="¿Seguro que desea cancelar esta orden? No se podrá revertir."
+    [peligro]="true"
+    textoConfirmar="Cancelar la orden"
+    textoCancelar="Volver"
+    (confirmar)="confirmarCancelacion()"
+    (cancelar)="confirmandoCancelacion.set(false)"
+  ></app-confirmar>
 }

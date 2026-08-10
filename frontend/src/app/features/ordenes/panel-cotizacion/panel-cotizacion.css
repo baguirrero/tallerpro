@@ -1,0 +1,109 @@
+.linea {
+  padding-bottom: var(--e3);
+  margin-bottom: var(--e3);
+  border-bottom: 1px solid var(--borde);
+}
+.linea:last-of-type {
+  border-bottom: none;
+}
+.linea-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e2);
+}
+
+/* La aprobación no es un estado del trabajo, así que no es una pastilla; usa
+   los tokens de estado que le corresponden por significado. */
+.marca {
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: var(--e1) var(--e2);
+  border-radius: var(--r-full);
+  white-space: nowrap;
+}
+.marca.aprobado {
+  background: var(--estado-finalizada-fondo);
+  color: var(--estado-finalizada-texto);
+}
+.marca.rechazado {
+  background: var(--estado-cancelada-fondo);
+  color: var(--estado-cancelada-texto);
+}
+.marca.esperando {
+  background: var(--estado-cotizada-fondo);
+  color: var(--estado-cotizada-texto);
+}
+.marca.sin-cotizar {
+  background: var(--estado-recibida-fondo);
+  color: var(--estado-recibida-texto);
+}
+
+.detalle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+  margin-bottom: var(--e1);
+}
+.repuesto {
+  padding-left: var(--e3);
+}
+
+.importe {
+  font-variant-numeric: tabular-nums;
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--e3);
+  align-items: start;
+  background: var(--superficie-hundida);
+  border-radius: var(--r-sm);
+  padding: var(--e3);
+  margin-top: var(--e2);
+}
+.editor-acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--e2);
+}
+@media (max-width: 640px) {
+  .editor {
+    grid-template-columns: 1fr;
+  }
+}
+
+.totales {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--e4);
+  text-align: right;
+  margin-top: var(--e4);
+}
+.totales .etiqueta {
+  display: block;
+  margin-bottom: var(--e1);
+}
+.totales .importe {
+  font-size: var(--t-titulo);
+}
+.destacado {
+  color: var(--estado-finalizada-texto);
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

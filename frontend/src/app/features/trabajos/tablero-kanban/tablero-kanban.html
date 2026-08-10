@@ -1,82 +1,79 @@
 @if (mensajeError()) {
-  <div class="alert alert-danger">{{ mensajeError() }}</div>
+  <div class="bloque-error">{{ mensajeError() }}</div>
 }
 
-@if (cargando()) {
-  <app-spinner></app-spinner>
-} @else {
-  <div class="row g-3">
-    @for (columna of columnas; track columna) {
-      <div class="col-md-3">
-        <div class="columna-kanban">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">{{ etiquetas[columna] }}</h6>
-            <span class="badge text-bg-secondary">{{ trabajosDeColumna(columna).length }}</span>
-          </div>
+<div class="tablero">
+  @for (columna of columnas; track columna) {
+    <section class="columna">
+      <header class="columna-cab">
+        <span class="etiqueta">{{ etiquetas[columna] }}</span>
+        <span class="conteo">{{ trabajosDeColumna(columna).length }}</span>
+      </header>
 
-          @if (trabajosDeColumna(columna).length === 0) {
-            <p class="text-muted small text-center my-4">Sin trabajos</p>
-          }
+      @if (cargando()) {
+        <app-esqueleto variante="tarjeta" [repeticiones]="1"></app-esqueleto>
+      } @else if (trabajosDeColumna(columna).length === 0) {
+        <p class="columna-vacia">Sin trabajos</p>
+      } @else {
+        @for (trabajo of trabajosDeColumna(columna); track trabajo.id) {
+          <article class="tarjeta" [class.sin-aprobar]="!estaAprobado(trabajo)">
+            <h4 class="titulo">{{ trabajo.titulo }}</h4>
 
-          @for (trabajo of trabajosDeColumna(columna); track trabajo.id) {
-            <div class="card mb-2 shadow-sm tarjeta-trabajo"
-                 [class.opacity-50]="!estaAprobado(trabajo)">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <h6 class="card-title mb-0">{{ trabajo.titulo }}</h6>
-                  <app-badge-estado [estado]="trabajo.prioridad"></app-badge-estado>
-                </div>
+            <app-prioridad [valor]="trabajo.prioridad"></app-prioridad>
 
-                @if (!estaAprobado(trabajo)) {
-                  <span class="badge bg-secondary mb-2">Sin aprobar</span>
-                }
+            @if (!estaAprobado(trabajo)) {
+              <p class="marca-sin-aprobar">Sin aprobar</p>
+            }
 
-                @if (trabajo.motivo_espera) {
-                  <div class="small text-warning-emphasis mb-2">
-                    ⏸ {{ trabajo.motivo_espera }}
-                  </div>
-                }
+            @if (trabajo.motivo_espera) {
+              <p class="motivo">⏸ {{ trabajo.motivo_espera }}</p>
+            }
 
-                @if (trabajo.descripcion) {
-                  <p class="small text-muted mb-2">{{ trabajo.descripcion }}</p>
-                }
+            <p class="meta">
+              {{
+                trabajo.asignado_a
+                  ? trabajo.asignado_a.nombres + ' ' + trabajo.asignado_a.apellidos
+                  : 'Sin asignar'
+              }}
+              @if (trabajo.fecha_limite) {
+                · {{ trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC' }}
+              }
+            </p>
 
-                <div class="small mb-2">
-                  <div>
-                    <strong>Mecánico:</strong>
-                    {{ trabajo.asignado_a
-                        ? trabajo.asignado_a.nombres + ' ' + trabajo.asignado_a.apellidos
-                        : 'Sin asignar' }}
-                  </div>
-                  @if (trabajo.fecha_limite) {
-                    <div>
-                      <strong>Límite:</strong>
-                      {{ trabajo.fecha_limite | date: 'dd/MM/yyyy' : 'UTC' }}
-                    </div>
-                  }
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="d-flex flex-wrap gap-1">
-                    @for (destino of destinos(trabajo); track destino) {
-                      <button
-                        class="btn btn-sm btn-outline-secondary"
-                        (click)="mover(trabajo, destino)"
-                      >
-                        {{ accion(trabajo, destino) }}
-                      </button>
-                    }
-                  </div>
-
-                  <button class="btn btn-sm btn-outline-primary" (click)="seleccionar(trabajo)">
-                    Detalle
-                  </button>
-                </div>
-              </div>
+            <div class="botones">
+              @for (destino of destinos(trabajo); track destino) {
+                <app-boton variante="secundario" tamano="sm" (pulsar)="mover(trabajo, destino)">
+                  {{ accion(trabajo, destino) }}
+                </app-boton>
+              }
+              <app-boton variante="fantasma" tamano="sm" (pulsar)="seleccionar(trabajo)">
+                Detalle
+              </app-boton>
             </div>
-          }
-        </div>
-      </div>
-    }
+          </article>
+        }
+      }
+    </section>
+  }
+</div>
+
+<app-modal
+  [abierto]="esperandoMotivo() !== null"
+  titulo="¿Qué repuesto se está esperando?"
+  (cerrar)="cerrarMotivo()"
+>
+  <app-campo
+    etiqueta="Repuesto"
+    marcador="Pastillas de freno delanteras"
+    ayuda="Queda anotado en la tarjeta hasta que el trabajo se retome."
+    [valor]="motivo()"
+    (valorCambia)="motivo.set($event)"
+  ></app-campo>
+
+  <div pie>
+    <app-boton variante="fantasma" (pulsar)="cerrarMotivo()">Cancelar</app-boton>
+    <app-boton variante="primario" [deshabilitado]="!motivoValido()" (pulsar)="confirmarMotivo()">
+      Marcar en espera
+    </app-boton>
   </div>
-}
+</app-modal>
