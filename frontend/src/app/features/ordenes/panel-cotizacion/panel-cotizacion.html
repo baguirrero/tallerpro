@@ -1,100 +1,119 @@
-<div class="card shadow-sm mb-4">
-  <div class="card-header fw-semibold">Cotización</div>
+<app-tarjeta titulo="Cotización">
+  @if (mensajeError()) {
+    <div class="bloque-error">{{ mensajeError() }}</div>
+  }
 
-  <div class="card-body">
-    @if (mensajeError()) {
-      <div class="alert alert-danger">{{ mensajeError() }}</div>
-    }
-
-    @if (trabajos().length === 0) {
-      <p class="text-muted mb-0">Esta orden todavía no tiene trabajos.</p>
-    } @else {
-      @for (trabajo of trabajos(); track trabajo.id) {
-        <div class="border-bottom pb-3 mb-3">
-          <div class="d-flex justify-content-between">
-            <div>
-              <strong>{{ trabajo.titulo }}</strong>
-              @if (!estaCotizado(trabajo)) {
-                <span class="badge bg-secondary ms-2">Sin cotizar</span>
-              } @else if (trabajo.aprobado === true) {
-                <span class="badge bg-success ms-2">Aprobado</span>
-              } @else if (trabajo.aprobado === false) {
-                <span class="badge bg-danger ms-2">Rechazado</span>
-              } @else {
-                <span class="badge bg-warning text-dark ms-2">Esperando respuesta</span>
-              }
-            </div>
-            <strong>{{ trabajo.subtotal | currency: 'PEN' }}</strong>
+  @if (trabajos().length === 0) {
+    <p class="texto-suave">Esta orden todavía no tiene trabajos.</p>
+  } @else {
+    @for (trabajo of trabajos(); track trabajo.id) {
+      <div class="linea">
+        <div class="linea-cab">
+          <div class="fila">
+            <strong>{{ trabajo.titulo }}</strong>
+            <span class="marca" [class]="marca(trabajo)">{{ rotulos[marca(trabajo)] }}</span>
           </div>
+          <strong class="importe">{{
+            trabajo.subtotal | currency: 'PEN' : 'symbol-narrow'
+          }}</strong>
+        </div>
 
-          @if (estaCotizado(trabajo)) {
-            <div class="small text-muted mt-1">
-              Mano de obra: {{ trabajo.precio_mano_obra | currency: 'PEN' }}
-            </div>
+        @if (estaCotizado(trabajo)) {
+          <p class="detalle">
+            <span>Mano de obra</span>
+            <span class="importe">
+              {{ trabajo.precio_mano_obra | currency: 'PEN' : 'symbol-narrow' }}
+            </span>
+          </p>
 
-            @for (repuesto of trabajo.repuestos ?? []; track repuesto.id) {
-              <div class="small d-flex justify-content-between mt-1">
-                <span>
-                  {{ repuesto.cantidad }} × {{ repuesto.descripcion }}
-                  ({{ repuesto.precio_unitario | currency: 'PEN' }} c/u)
+          @for (repuesto of trabajo.repuestos ?? []; track repuesto.id) {
+            <p class="detalle repuesto">
+              <span>
+                {{ repuesto.cantidad }} × {{ repuesto.descripcion }} ({{
+                  repuesto.precio_unitario | currency: 'PEN' : 'symbol-narrow'
+                }}
+                c/u)
+              </span>
+              <span class="fila">
+                <span class="importe">
+                  {{
+                    repuesto.cantidad * repuesto.precio_unitario | currency: 'PEN' : 'symbol-narrow'
+                  }}
                 </span>
-                <span>
-                  {{ repuesto.cantidad * repuesto.precio_unitario | currency: 'PEN' }}
-                  @if (puedeCotizar()) {
-                    <button class="btn btn-sm btn-link text-danger p-0 ms-2"
-                            (click)="eliminarRepuesto(repuesto.id)">quitar</button>
-                  }
-                </span>
+                @if (puedeCotizar()) {
+                  <app-boton
+                    variante="fantasma"
+                    tamano="sm"
+                    (pulsar)="eliminarRepuesto(repuesto.id)"
+                  >
+                    quitar
+                  </app-boton>
+                }
+              </span>
+            </p>
+          }
+
+          @if (puedeCotizar()) {
+            @if (trabajoEnEdicion() === trabajo.id) {
+              <div class="editor">
+                <app-campo
+                  etiqueta="Repuesto"
+                  [valor]="descripcion()"
+                  (valorCambia)="descripcion.set($event)"
+                ></app-campo>
+                <app-campo
+                  etiqueta="Cantidad"
+                  tipo="number"
+                  [valor]="cantidad()"
+                  (valorCambia)="cantidad.set($event)"
+                ></app-campo>
+                <app-campo
+                  etiqueta="Precio unitario"
+                  tipo="number"
+                  [valor]="precio()"
+                  (valorCambia)="precio.set($event)"
+                ></app-campo>
+
+                <div class="editor-acciones">
+                  <app-boton variante="fantasma" (pulsar)="cerrarEditor()">Cancelar</app-boton>
+                  <app-boton
+                    variante="primario"
+                    [deshabilitado]="borrador() === null"
+                    (pulsar)="agregarRepuesto()"
+                  >
+                    Agregar
+                  </app-boton>
+                </div>
               </div>
-            }
-
-            @if (puedeCotizar()) {
-              @if (trabajoEnEdicion() === trabajo.id) {
-                <form class="row g-2 mt-2" [formGroup]="formularioRepuesto"
-                      (ngSubmit)="agregarRepuesto()">
-                  <div class="col-md-6">
-                    <input class="form-control form-control-sm" placeholder="Repuesto"
-                           formControlName="descripcion" />
-                  </div>
-                  <div class="col-md-2">
-                    <input class="form-control form-control-sm" type="number" min="1"
-                           formControlName="cantidad" />
-                  </div>
-                  <div class="col-md-2">
-                    <input class="form-control form-control-sm" type="number" step="0.01" min="0"
-                           formControlName="precio_unitario" />
-                  </div>
-                  <div class="col-md-2 d-flex gap-1">
-                    <button class="btn btn-sm btn-primary" type="submit">Agregar</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button"
-                            (click)="cerrarEditor()">×</button>
-                  </div>
-                </form>
-              } @else {
-                <button class="btn btn-sm btn-outline-primary mt-2"
-                        (click)="abrirEditor(trabajo.id)">
-                  + Repuesto
-                </button>
-              }
+            } @else {
+              <app-boton variante="secundario" tamano="sm" (pulsar)="abrirEditor(trabajo.id)">
+                + Repuesto
+              </app-boton>
             }
           }
-        </div>
-      }
-
-      <div class="row text-end">
-        <div class="col">
-          <div class="small text-muted">Aprobado</div>
-          <div class="fw-bold text-success">{{ totales().aprobado | currency: 'PEN' }}</div>
-        </div>
-        <div class="col">
-          <div class="small text-muted">Esperando respuesta</div>
-          <div class="fw-bold">{{ totales().pendiente | currency: 'PEN' }}</div>
-        </div>
-        <div class="col">
-          <div class="small text-muted">Rechazado</div>
-          <div class="fw-bold text-muted">{{ totales().rechazado | currency: 'PEN' }}</div>
-        </div>
+        }
       </div>
     }
-  </div>
-</div>
+
+    <div class="totales">
+      <div>
+        <span class="etiqueta">Aprobado</span>
+        <strong class="importe destacado">
+          {{ totales().aprobado | currency: 'PEN' : 'symbol-narrow' }}
+        </strong>
+      </div>
+      <div>
+        <span class="etiqueta">Esperando respuesta</span>
+        <strong class="importe">
+          {{ totales().pendiente | currency: 'PEN' : 'symbol-narrow' }}
+        </strong>
+      </div>
+      <div>
+        <span class="etiqueta">Rechazado</span>
+        <strong class="importe texto-suave">
+          {{ totales().rechazado | currency: 'PEN' : 'symbol-narrow' }}
+        </strong>
+      </div>
+    </div>
+  }
+</app-tarjeta>
