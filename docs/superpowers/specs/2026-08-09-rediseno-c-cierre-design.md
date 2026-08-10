@@ -94,8 +94,13 @@ Los textos salen de un mapa único:
 |---|---|
 | `required` | Este campo es obligatorio |
 | `minlength` | Mínimo {n} caracteres |
-| `min` / `max` | El valor debe estar entre {min} y {max} |
 | `email` | Correo electrónico no válido |
+| `min` | El valor mínimo es {min} |
+| `max` | El valor máximo es {max} |
+
+`min` y `max` son **dos mensajes separados**, no uno que diga «entre X e Y».
+Angular los emite por separado —`{min: 1950, actual: 1900}`— y nunca los dos a la
+vez, así que desde un solo error no hay forma de saber el otro extremo.
 
 El input `error` sigue existiendo y **pisa** al mapa: es la vía por la que un
 mensaje del servidor llega al campo, como el «Esa placa ya existe con otros
