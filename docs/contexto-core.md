@@ -232,7 +232,8 @@ src/app/
 │                      usuario, vehiculo
 ├── shared/
 │   ├── ui/            el sistema de diseño: botón, campo, select, pastilla,
-│   │                  tarjeta, toast, esqueleto, estado vacío, modal, confirmar
+│   │                  prioridad, tarjeta, toast, esqueleto, estado vacío,
+│   │                  modal, confirmar
 │   ├── shell/         barra lateral, topbar y cajón móvil
 │   └── components/    spinner, badge-estado (heredados; se retiran en la entrega C)
 └── features/          auth · dashboard · ordenes · trabajos · usuarios · perfil · ui
@@ -244,15 +245,34 @@ compartido: guarda token y usuario en `localStorage` y los expone como signals
 (`estaAutenticado`, `usuario`, `rolPrincipal`, `nombreCompleto`), de modo que la
 navbar y los guards reaccionan solos.
 
-Pantallas: login, registro, dashboard (estadísticas + "mis trabajos"), lista de
-órdenes con filtro por estado, formulario de orden (alta y edición comparten
-componente), detalle de orden (datos + Kanban + alta de trabajo + panel de
-trabajo con comentarios y adjuntos), lista de usuarios, cambio de contraseña.
+Pantallas: login, registro, dashboard, lista de órdenes, formulario de orden
+(alta y edición comparten componente), detalle de orden, lista de usuarios,
+cambio de contraseña y ficha de vehículo.
+
+Desde la entrega B del rediseño, las tres que el taller usa a diario funcionan
+distinto de como las describen las fases anteriores. El **dashboard** ya no es un
+marcador de los siete estados: muestra lo que pide acción —esperando repuesto,
+esperando al cliente, listas para entregar— y cada cifra enlaza a la lista con el
+filtro puesto; en cero se apaga y deja de ser clicable. La **lista de órdenes**
+lleva el estado en un query param (`/ordenes?estado=COTIZADA`), que es lo que
+hace que ese enlace funcione y que recargar no lo pierda, y suma un buscador que
+filtra **en el navegador** sobre lo ya cargado —no hay endpoint de búsqueda— y lo
+declara con un «3 de 52». El **detalle de orden** tiene cabecera compacta y dos
+pestañas, Trabajos y Cotización, con el Kanban a ancho completo; cuando la orden
+está `COTIZADA` una franja de aviso lleva a la pestaña donde se registra la
+respuesta del cliente.
 
 El Kanban se mueve con botones, no arrastrando: el CDK de Angular no entró en el
 temario del curso. Desde la fase 2b hay un botón por destino válido —Iniciar,
 ⏸ Esperar repuesto, Completar, ▶ Retomar, ← Reabrir—, generado a partir de la
 tabla de transiciones en vez de las flechas `◀ ▶` que recorrían el array.
+
+Las pantallas núcleo no usan Bootstrap ni los diálogos del navegador: eliminar
+una orden y cancelarla pasan por el modal propio, y el motivo de espera se pide
+con un campo dentro de un modal en vez de con `prompt()`. Queda un `confirm()` en
+`detalle-trabajo`, al borrar un adjunto, que se retira en la entrega C.
+`badge-estado` y `spinner` siguen existiendo porque cuatro pantallas todavía sin
+rediseñar los usan; se van con Bootstrap al cerrar la C.
 
 ---
 
@@ -260,6 +280,15 @@ tabla de transiciones en vez de las flechas `◀ ▶` que recorrían el array.
 
 Cosas que sorprenden si no se saben:
 
+- **`PATCH /ordenes/:id/entregar` y `/cancelar` devuelven la entidad cruda, sin
+  `totales`.** Solo el endpoint de detalle los calcula. Poner esa respuesta en el
+  signal de la pantalla deja la cabecera a medio pintar con un `TypeError`; hay
+  que releer la orden. Lo mismo vale para cualquier mutación que se agregue.
+- **Los paneles del detalle de orden cargan su propia lista de trabajos.** El
+  Kanban y la cotización piden `GET /trabajos/orden/:id` cada uno por su cuenta,
+  así que `refrescarOrden()` tiene que avisarles por `viewChild`. Sin eso, los
+  totales —que salen de la orden— se actualizan y las líneas quedan mostrando el
+  estado de aprobación viejo.
 - **El color vive en `styles/tokens.css` y en ningún otro sitio.** Los tokens son
   semánticos (`--superficie`, no `--blanco`), y por eso el tema oscuro es un bloque
   de redefiniciones. Un componente que nombre un color crudo se rompe en oscuro:
@@ -364,7 +393,10 @@ obligatorias.
 
 **Operación**
 - Sin paginación en órdenes ni usuarios; sin índices sobre `placa`, `estado` o
-  `asignado_a`.
+  `asignado_a`. **El buscador de la lista de órdenes depende de esto**: filtra lo
+  que ya trajo, y hoy eso es todo. El día que se pagine dejará de encontrar lo que
+  no esté en la página actual, así que hay que moverlo al servidor en la misma
+  tanda. El contador «3 de 52» es lo que lo delata.
 - El interceptor no reacciona al `401`: el token vence y la app sigue mostrando
   errores hasta que se recarga.
 - Sin Swagger, sin health check, sin logging estructurado.
