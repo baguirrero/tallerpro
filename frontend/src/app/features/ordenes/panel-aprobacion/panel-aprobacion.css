@@ -1,0 +1,39 @@
+.linea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  flex-wrap: wrap;
+  padding: var(--e2) 0;
+  border-bottom: 1px solid var(--borde);
+  font-size: var(--t-tabla);
+}
+.linea:last-of-type {
+  border-bottom: none;
+}
+
+.importe {
+  font-variant-numeric: tabular-nums;
+  margin-left: var(--e2);
+}
+
+.decision {
+  display: flex;
+  gap: var(--e2);
+}
+
+.pie {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--e4);
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

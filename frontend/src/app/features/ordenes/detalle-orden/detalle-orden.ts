@@ -47,6 +47,7 @@ export class DetalleOrden implements OnInit {
   private readonly toast = inject(ToastService);
 
   private readonly tablero = viewChild(TableroKanban);
+  private readonly cotizacion = viewChild(PanelCotizacion);
 
   readonly cargando = signal<boolean>(true);
   readonly mensajeError = signal<string | null>(null);
@@ -147,12 +148,20 @@ export class DetalleOrden implements OnInit {
     });
   }
 
-  /** El Kanban avisa cuando mueve una tarjeta: el estado de la orden
-   *  lo decide el backend a partir de sus trabajos, así que se relee. */
+  /**
+   * El Kanban avisa cuando mueve una tarjeta: el estado de la orden lo decide
+   * el backend a partir de sus trabajos, así que se relee.
+   *
+   * Los dos paneles cargan su propia lista de trabajos, y hay que avisarles.
+   * Sin esto, registrar la aprobación actualizaba los totales —que vienen de la
+   * orden— pero dejaba cada línea diciendo «Esperando respuesta».
+   * El `?.` cubre que solo uno de los dos esté dibujado según la pestaña.
+   */
   refrescarOrden(): void {
     const id = this.orden()?.id;
     if (id) this.cargarOrden(id);
     this.tablero()?.cargarTrabajos();
+    this.cotizacion()?.cargar();
   }
 
   alCrearTrabajo(): void {
