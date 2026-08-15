@@ -7,13 +7,18 @@ import { catchError, debounceTime, distinctUntilChanged, filter, map, of, switch
 import { OrdenService } from '../../../core/services/orden';
 import { VehiculoService } from '../../../core/services/vehiculo';
 import { Diferencia, Vehiculo } from '../../../core/models/vehiculo.model';
-import { Spinner } from '../../../shared/components/spinner/spinner';
+import { Campo } from '../../../shared/ui/campo';
+import { Area } from '../../../shared/ui/area';
+import { Boton } from '../../../shared/ui/boton';
+import { Tarjeta } from '../../../shared/ui/tarjeta';
+import { Esqueleto } from '../../../shared/ui/esqueleto';
+import { ToastService } from '../../../shared/ui/toast';
 
 @Component({
   selector: 'app-formulario-orden',
-  imports: [ReactiveFormsModule, RouterLink, Spinner],
+  imports: [ReactiveFormsModule, RouterLink, Campo, Area, Boton, Tarjeta, Esqueleto],
   templateUrl: './formulario-orden.html',
-  styles: ``,
+  styleUrl: './formulario-orden.css',
 })
 export class FormularioOrden implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -21,10 +26,13 @@ export class FormularioOrden implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly vehiculoService = inject(VehiculoService);
+  private readonly toast = inject(ToastService);
 
   readonly guardando = signal<boolean>(false);
   readonly cargando = signal<boolean>(false);
-  readonly mensajeError = signal<string | null>(null);
+  /** Solo el fallo al cargar la orden a editar. Lo que sale mal al guardar
+   *  va por toast: es el resultado de una acción, no una pantalla vacía. */
+  readonly errorDeCarga = signal<string | null>(null);
   readonly ordenId = signal<string | null>(null);
   readonly vehiculoConocido = signal<Vehiculo | null>(null);
   readonly diferencias = signal<Diferencia[]>([]);
@@ -108,7 +116,7 @@ export class FormularioOrden implements OnInit {
         this.cargando.set(false);
       },
       error: () => {
-        this.mensajeError.set('No se pudo cargar la orden');
+        this.errorDeCarga.set('No se pudo cargar la orden solicitada');
         this.cargando.set(false);
       },
     });
@@ -121,7 +129,6 @@ export class FormularioOrden implements OnInit {
     }
 
     this.guardando.set(true);
-    this.mensajeError.set(null);
 
     const valores = this.formulario.getRawValue();
 
@@ -172,17 +179,12 @@ export class FormularioOrden implements OnInit {
     }
 
     const mensaje = error.error?.message;
-    this.mensajeError.set(
+    this.toast.error(
       Array.isArray(mensaje) ? mensaje.join('. ') : (mensaje ?? 'No se pudo guardar la orden'),
     );
   }
 
   cancelar(): void {
     this.router.navigate(['/ordenes']);
-  }
-
-  tieneError(campo: string, tipoError: string): boolean {
-    const control = this.formulario.get(campo);
-    return !!control && control.hasError(tipoError) && control.touched;
   }
 }

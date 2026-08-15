@@ -1,0 +1,94 @@
+.ancho {
+  max-width: 880px;
+}
+
+.etiqueta {
+  display: block;
+  margin: var(--e6) 0 var(--e3);
+}
+.etiqueta:first-of-type {
+  margin-top: 0;
+}
+
+.rejilla {
+  display: grid;
+  gap: var(--e4);
+}
+.vehiculo {
+  grid-template-columns: 1.4fr 1fr 1fr 0.7fr;
+  align-items: start;
+}
+.propietario {
+  grid-template-columns: 2fr 1fr;
+}
+.servicio {
+  grid-template-columns: 1fr;
+}
+.fechas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e4);
+  max-width: 420px;
+}
+
+@media (max-width: 768px) {
+  .vehiculo,
+  .propietario,
+  .fechas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aviso-conocido {
+  margin-top: var(--e1);
+  font-size: var(--t-menor);
+  color: var(--exito-texto);
+}
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+}
+.enlace:hover {
+  text-decoration: underline;
+}
+
+/* El conflicto de placa es un aviso, no un error: el usuario puede seguir. */
+.conflicto {
+  background: var(--aviso-fondo);
+  color: var(--aviso-texto);
+  border: 1px solid var(--aviso-texto);
+  border-radius: var(--r-md);
+  padding: var(--e4);
+  margin-top: var(--e6);
+  font-size: var(--t-tabla);
+}
+.conflicto-titulo {
+  font-weight: 600;
+  margin-bottom: var(--e2);
+}
+.conflicto-lista {
+  margin: 0 0 var(--e3) var(--e4);
+}
+.conflicto-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--e2);
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--e2);
+  margin-top: var(--e6);
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

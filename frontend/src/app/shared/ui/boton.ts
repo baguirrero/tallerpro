@@ -5,6 +5,7 @@ import { Component, input, output } from '@angular/core';
   template: `
     <button
       class="b"
+      type="button"
       [class]="variante() + ' ' + tamano()"
       [class.bloque]="bloque()"
       [disabled]="deshabilitado() || cargando()"
@@ -107,6 +108,12 @@ import { Component, input, output } from '@angular/core';
     }
   `,
 })
+/**
+ * El `type="button"` de la plantilla no es decorativo. Un `<button>` sin `type`
+ * dentro de un `<form>` es `submit` por omisión, así que «Cancelar» o
+ * «Corregir» enviaban el formulario en vez de hacer lo suyo. Quien quiera
+ * enviar lo hace desde `(pulsar)`, que es explícito.
+ */
 export class Boton {
   readonly variante = input<'primario' | 'secundario' | 'fantasma' | 'peligro'>('primario');
   readonly tamano = input<'sm' | 'md'>('md');
