@@ -1,0 +1,98 @@
+.cabecera {
+  margin-bottom: var(--e4);
+}
+
+.seccion {
+  margin-bottom: var(--e6);
+}
+.seccion:last-of-type {
+  margin-bottom: 0;
+}
+.seccion .etiqueta {
+  display: block;
+  margin-bottom: var(--e3);
+}
+
+.vacio {
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+  margin-bottom: var(--e3);
+}
+
+.comentarios {
+  list-style: none;
+  display: grid;
+  gap: var(--e2);
+  margin-bottom: var(--e3);
+}
+.comentario {
+  background: var(--superficie-hundida);
+  border-left: 3px solid var(--acento);
+  border-radius: var(--r-sm);
+  padding: var(--e2) var(--e3);
+}
+.comentario-cab {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--e2);
+  font-size: var(--t-menor);
+  margin-bottom: var(--e1);
+}
+.comentario-texto {
+  font-size: var(--t-tabla);
+  overflow-wrap: anywhere;
+}
+
+.adjuntos {
+  list-style: none;
+  display: grid;
+  gap: var(--e2);
+  margin-bottom: var(--e3);
+}
+.adjunto {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: var(--e2) var(--e3);
+}
+
+/* El input de archivo nativo no se puede estilar; se dispara desde un botón. */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.subir {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  margin-bottom: var(--e1);
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--e2);
+}
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+}
+.enlace:hover {
+  text-decoration: underline;
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

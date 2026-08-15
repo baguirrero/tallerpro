@@ -121,16 +121,6 @@
   margin-bottom: var(--e3);
 }
 
-.detalle-trabajo {
-  margin-top: var(--e6);
-}
-.detalle-cab {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--e3);
-}
-
 .enlace {
   color: var(--acento);
   text-decoration: none;
