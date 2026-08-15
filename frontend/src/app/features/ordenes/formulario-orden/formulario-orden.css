@@ -67,8 +67,11 @@
   font-weight: 600;
   margin-bottom: var(--e2);
 }
+/* La única lista con viñetas del proyecto: pide su sangría, porque la base ya
+   no la hereda del navegador y el marcador quedaría fuera de la caja. */
 .conflicto-lista {
-  margin: 0 0 var(--e3) var(--e4);
+  margin: 0 0 var(--e3);
+  padding-left: var(--e6);
 }
 .conflicto-acciones {
   display: flex;
