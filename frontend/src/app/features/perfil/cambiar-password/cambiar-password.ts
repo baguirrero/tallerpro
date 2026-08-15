@@ -8,21 +8,24 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
+import { Campo } from '../../../shared/ui/campo';
+import { Boton } from '../../../shared/ui/boton';
+import { Tarjeta } from '../../../shared/ui/tarjeta';
+import { ToastService } from '../../../shared/ui/toast';
 
 @Component({
   selector: 'app-cambiar-password',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Campo, Boton, Tarjeta],
   templateUrl: './cambiar-password.html',
-  styles: ``,
+  styleUrl: './cambiar-password.css',
 })
 export class CambiarPassword {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   readonly guardando = signal<boolean>(false);
-  readonly mensajeError = signal<string | null>(null);
-  readonly mensajeExito = signal<string | null>(null);
 
   readonly formulario = this.fb.nonNullable.group(
     {
@@ -46,21 +49,20 @@ export class CambiarPassword {
     }
 
     this.guardando.set(true);
-    this.mensajeError.set(null);
-    this.mensajeExito.set(null);
 
     const { passwordActual, passwordNueva } = this.formulario.getRawValue();
 
     this.authService.cambiarPassword({ passwordActual, passwordNueva }).subscribe({
       next: (respuesta) => {
         this.guardando.set(false);
-        this.mensajeExito.set(respuesta.mensaje);
+        this.toast.exito(respuesta.mensaje);
         this.formulario.reset();
       },
       error: (error) => {
         this.guardando.set(false);
+        // La API devuelve un array cuando falla más de una validación.
         const mensaje = error.error?.message;
-        this.mensajeError.set(
+        this.toast.error(
           Array.isArray(mensaje)
             ? mensaje.join('. ')
             : (mensaje ?? 'No se pudo cambiar la contraseña'),
@@ -71,11 +73,6 @@ export class CambiarPassword {
 
   volver(): void {
     this.router.navigate(['/dashboard']);
-  }
-
-  tieneError(campo: string, tipoError: string): boolean {
-    const control = this.formulario.get(campo);
-    return !!control && control.hasError(tipoError) && control.touched;
   }
 
   noCoinciden(): boolean {

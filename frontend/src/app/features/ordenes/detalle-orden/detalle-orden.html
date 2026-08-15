@@ -123,18 +123,6 @@
       (trabajoSeleccionado)="alSeleccionarTrabajo($event)"
       (estadoCambiado)="refrescarOrden()"
     ></app-tablero-kanban>
-
-    @if (trabajoSeleccionado(); as trabajo) {
-      <div class="detalle-trabajo">
-        <div class="detalle-cab">
-          <span class="etiqueta">Detalle del trabajo</span>
-          <app-boton variante="fantasma" tamano="sm" (pulsar)="cerrarDetalleTrabajo()">
-            Cerrar
-          </app-boton>
-        </div>
-        <app-detalle-trabajo [trabajo]="trabajo"></app-detalle-trabajo>
-      </div>
-    }
   } @else {
     @if (hayQueAprobar()) {
       <app-panel-aprobacion
@@ -149,6 +137,18 @@
       (cotizacionCambiada)="refrescarOrden()"
     ></app-panel-cotizacion>
   }
+
+  <!-- Fuera del @if de la pestaña: el panel flota sobre la pantalla y no
+       pertenece a ninguna de las dos. -->
+  <app-panel
+    [abierto]="trabajoSeleccionado() !== null"
+    [titulo]="trabajoSeleccionado()?.titulo ?? ''"
+    (cerrar)="cerrarDetalleTrabajo()"
+  >
+    @if (trabajoSeleccionado(); as trabajo) {
+      <app-detalle-trabajo [trabajo]="trabajo"></app-detalle-trabajo>
+    }
+  </app-panel>
 
   <app-confirmar
     [abierto]="confirmandoCancelacion()"

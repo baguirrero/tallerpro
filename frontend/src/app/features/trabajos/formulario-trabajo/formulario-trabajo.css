@@ -1,0 +1,18 @@
+.rejilla {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--e4);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .rejilla {
+    grid-template-columns: 1fr;
+  }
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--e6);
+}

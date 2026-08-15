@@ -1,0 +1,53 @@
+.titulo {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  color: var(--texto-primario);
+  margin-bottom: var(--e4);
+}
+
+.panel {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-1);
+  overflow: hidden;
+}
+.cargando {
+  padding: var(--e4);
+}
+
+.usuario {
+  font-weight: 600;
+}
+
+/* Activo no es un estado de orden ni de trabajo, así que no es app-pastilla:
+   meterlo en el diccionario de estados repetiría el error que la entrega B
+   evitó con las marcas de aprobación. */
+.marca {
+  font-size: var(--t-etiqueta);
+  font-weight: 600;
+  padding: var(--e1) var(--e2);
+  border-radius: var(--r-full);
+  white-space: nowrap;
+  background: var(--estado-cancelada-fondo);
+  color: var(--estado-cancelada-texto);
+}
+.marca.activo {
+  background: var(--estado-finalizada-fondo);
+  color: var(--estado-finalizada-texto);
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

@@ -1,155 +1,95 @@
-<div class="row justify-content-center">
-  <div class="col-lg-9">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">
-          {{ esEdicion ? 'Editar orden de servicio' : 'Nueva orden de servicio' }}
-        </h5>
-      </div>
-
-      <div class="card-body p-4">
-        @if (mensajeError()) {
-          <div class="alert alert-danger">{{ mensajeError() }}</div>
-        }
-
-        @if (cargando()) {
-          <app-spinner></app-spinner>
-        } @else {
-          <form [formGroup]="formulario" (ngSubmit)="enviar()">
-            <h6 class="text-muted mb-3">Datos del vehículo</h6>
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <label class="form-label" for="placa">Placa</label>
-                <input id="placa" type="text" class="form-control" formControlName="placa"
-                       placeholder="ABC-123" />
-                @if (tieneError('placa', 'required')) {
-                  <small class="text-danger">La placa es obligatoria</small>
-                }
-                @if (tieneError('placa', 'minlength')) {
-                  <small class="text-danger">La placa debe tener al menos 6 caracteres</small>
-                }
-                @if (vehiculoConocido(); as vehiculo) {
-                  <small class="text-success d-block mt-1">
-                    Vehículo conocido ·
-                    <a [routerLink]="['/vehiculos', vehiculo.id]">ver historial</a>
-                  </small>
-                }
-              </div>
-
-              <div class="col-md-3 mb-3">
-                <label class="form-label" for="marca">Marca</label>
-                <input id="marca" type="text" class="form-control" formControlName="marca" />
-                @if (tieneError('marca', 'required')) {
-                  <small class="text-danger">La marca es obligatoria</small>
-                }
-              </div>
-
-              <div class="col-md-3 mb-3">
-                <label class="form-label" for="modelo">Modelo</label>
-                <input id="modelo" type="text" class="form-control" formControlName="modelo" />
-                @if (tieneError('modelo', 'required')) {
-                  <small class="text-danger">El modelo es obligatorio</small>
-                }
-              </div>
-
-              <div class="col-md-2 mb-3">
-                <label class="form-label" for="anio">Año</label>
-                <input id="anio" type="number" class="form-control" formControlName="anio" />
-              </div>
-            </div>
-
-            <h6 class="text-muted mb-3">Datos del propietario</h6>
-            <div class="row">
-              <div class="col-md-8 mb-3">
-                <label class="form-label" for="propietario_nombre">Nombre del propietario</label>
-                <input id="propietario_nombre" type="text" class="form-control"
-                       formControlName="propietario_nombre" />
-                @if (tieneError('propietario_nombre', 'required')) {
-                  <small class="text-danger">El nombre del cliente es obligatorio</small>
-                }
-              </div>
-
-              <div class="col-md-4 mb-3">
-                <label class="form-label" for="propietario_telefono">Teléfono</label>
-                <input id="propietario_telefono" type="text" class="form-control"
-                       formControlName="propietario_telefono" />
-                @if (tieneError('propietario_telefono', 'required')) {
-                  <small class="text-danger">El teléfono es obligatorio</small>
-                }
-              </div>
-            </div>
-
-            <h6 class="text-muted mb-3">Datos del servicio</h6>
-            <div class="mb-3">
-              <label class="form-label" for="descripcion">Descripción del servicio</label>
-              <textarea id="descripcion" class="form-control" rows="3"
-                        formControlName="descripcion"
-                        placeholder="Detalle del trabajo solicitado por el cliente"></textarea>
-              @if (tieneError('descripcion', 'required')) {
-                <small class="text-danger">La descripción es obligatoria</small>
-              }
-              @if (tieneError('descripcion', 'minlength')) {
-                <small class="text-danger">Describa el servicio con al menos 5 caracteres</small>
-              }
-            </div>
-
-            <div class="row">
-              <div class="col-md-3 mb-3">
-                <label class="form-label" for="fecha_ingreso">Fecha de ingreso</label>
-                <input id="fecha_ingreso" type="date" class="form-control"
-                       formControlName="fecha_ingreso" />
-                @if (tieneError('fecha_ingreso', 'required')) {
-                  <small class="text-danger">La fecha de ingreso es obligatoria</small>
-                }
-              </div>
-
-              <div class="col-md-3 mb-3">
-                <label class="form-label" for="fecha_entrega">Fecha de entrega</label>
-                <input id="fecha_entrega" type="date" class="form-control"
-                       formControlName="fecha_entrega" />
-              </div>
-
-            </div>
-
-            @if (diferencias().length > 0) {
-              <div class="alert alert-warning">
-                <p class="fw-semibold mb-2">Esta placa ya está registrada con otros datos</p>
-                <ul class="mb-3">
-                  @for (diferencia of diferencias(); track diferencia.campo) {
-                    <li>
-                      <strong>{{ diferencia.campo }}</strong>:
-                      guardado <em>{{ diferencia.guardado }}</em>,
-                      escrito <em>{{ diferencia.enviado }}</em>
-                    </li>
-                  }
-                </ul>
-                <button type="button" class="btn btn-sm btn-warning me-2"
-                        (click)="confirmarActualizacionDelVehiculo()">
-                  Actualizar el vehículo
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        (click)="descartarActualizacion()">
-                  Corregir
-                </button>
-              </div>
+@if (cargando()) {
+  <app-esqueleto variante="fila" [repeticiones]="6"></app-esqueleto>
+} @else if (errorDeCarga()) {
+  <div class="bloque-error">{{ errorDeCarga() }}</div>
+  <a class="enlace" routerLink="/ordenes">← Volver al listado</a>
+} @else {
+  <div class="ancho">
+    <app-tarjeta [titulo]="esEdicion ? 'Editar orden de servicio' : 'Nueva orden de servicio'">
+      <form [formGroup]="formulario" (ngSubmit)="enviar()">
+        <span class="etiqueta">Datos del vehículo</span>
+        <div class="rejilla vehiculo">
+          <div>
+            <app-campo etiqueta="Placa" marcador="ABC-123" formControlName="placa"></app-campo>
+            @if (vehiculoConocido(); as vehiculo) {
+              <p class="aviso-conocido">
+                Vehículo conocido ·
+                <a class="enlace" [routerLink]="['/vehiculos', vehiculo.id]">ver historial</a>
+              </p>
             }
+          </div>
 
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary" [disabled]="guardando()">
-                @if (guardando()) {
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                  Guardando...
-                } @else {
-                  {{ esEdicion ? 'Guardar cambios' : 'Registrar orden' }}
-                }
-              </button>
-              <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
-                Cancelar
-              </button>
+          <app-campo etiqueta="Marca" formControlName="marca"></app-campo>
+          <app-campo etiqueta="Modelo" formControlName="modelo"></app-campo>
+          <app-campo etiqueta="Año" tipo="number" formControlName="anio"></app-campo>
+        </div>
+
+        <span class="etiqueta">Datos del propietario</span>
+        <div class="rejilla propietario">
+          <app-campo
+            etiqueta="Nombre del propietario"
+            formControlName="propietario_nombre"
+          ></app-campo>
+          <app-campo etiqueta="Teléfono" formControlName="propietario_telefono"></app-campo>
+        </div>
+
+        <span class="etiqueta">Datos del servicio</span>
+        <div class="rejilla servicio">
+          <app-area
+            etiqueta="Descripción del servicio"
+            marcador="Detalle del trabajo solicitado por el cliente"
+            [filas]="3"
+            formControlName="descripcion"
+          ></app-area>
+
+          <div class="fechas">
+            <app-campo
+              etiqueta="Fecha de ingreso"
+              tipo="date"
+              formControlName="fecha_ingreso"
+            ></app-campo>
+            <app-campo
+              etiqueta="Fecha de entrega"
+              tipo="date"
+              formControlName="fecha_entrega"
+            ></app-campo>
+          </div>
+        </div>
+
+        @if (diferencias().length > 0) {
+          <div class="conflicto">
+            <p class="conflicto-titulo">Esta placa ya está registrada con otros datos</p>
+            <ul class="conflicto-lista">
+              @for (diferencia of diferencias(); track diferencia.campo) {
+                <li>
+                  <strong>{{ diferencia.campo }}</strong
+                  >: guardado <em>{{ diferencia.guardado }}</em
+                  >, escrito <em>{{ diferencia.enviado }}</em>
+                </li>
+              }
+            </ul>
+            <div class="conflicto-acciones">
+              <app-boton variante="secundario" tamano="sm" (pulsar)="descartarActualizacion()">
+                Corregir
+              </app-boton>
+              <app-boton
+                variante="primario"
+                tamano="sm"
+                (pulsar)="confirmarActualizacionDelVehiculo()"
+              >
+                Actualizar el vehículo
+              </app-boton>
             </div>
-          </form>
+          </div>
         }
-      </div>
-    </div>
+
+        <div class="acciones">
+          <app-boton variante="fantasma" (pulsar)="cancelar()">Cancelar</app-boton>
+          <app-boton variante="primario" [cargando]="guardando()" (pulsar)="enviar()">
+            {{ esEdicion ? 'Guardar cambios' : 'Registrar orden' }}
+          </app-boton>
+        </div>
+      </form>
+    </app-tarjeta>
   </div>
-</div>
+}

@@ -2,21 +2,24 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
+import { Campo } from '../../../shared/ui/campo';
+import { Boton } from '../../../shared/ui/boton';
+import { ToastService } from '../../../shared/ui/toast';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Campo, Boton],
   templateUrl: './login.html',
-  styles: ``,
+  styleUrl: '../auth.css',
 })
 export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly toast = inject(ToastService);
 
   readonly cargando = signal<boolean>(false);
-  readonly mensajeError = signal<string | null>(null);
 
   readonly formulario = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -30,7 +33,6 @@ export class Login {
     }
 
     this.cargando.set(true);
-    this.mensajeError.set(null);
 
     this.authService.login(this.formulario.getRawValue()).subscribe({
       next: () => {
@@ -38,17 +40,12 @@ export class Login {
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },
+      // Credenciales equivocadas es el resultado de una acción, no un fallo de
+      // carga: va por toast, como el resto de la aplicación desde la entrega B.
       error: (error) => {
         this.cargando.set(false);
-        this.mensajeError.set(
-          error.error?.message ?? 'No se pudo iniciar sesión. Intente nuevamente.',
-        );
+        this.toast.error(error.error?.message ?? 'No se pudo iniciar sesión. Intente nuevamente.');
       },
     });
-  }
-
-  tieneError(campo: 'email' | 'password', tipoError: string): boolean {
-    const control = this.formulario.controls[campo];
-    return control.hasError(tipoError) && control.touched;
   }
 }

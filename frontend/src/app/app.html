@@ -6,4 +6,8 @@
   <div class="sin-sesion">
     <router-outlet></router-outlet>
   </div>
+
+  <!-- El shell trae su propio app-toast, pero login y registro viven fuera de
+       él: sin esta instancia, un error de credenciales no se vería nunca. -->
+  <app-toast></app-toast>
 }

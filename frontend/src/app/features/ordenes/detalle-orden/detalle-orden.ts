@@ -11,6 +11,7 @@ import { ROLES } from '../../../core/models/estados';
 import { Pastilla } from '../../../shared/ui/pastilla';
 import { Boton } from '../../../shared/ui/boton';
 import { Confirmar } from '../../../shared/ui/confirmar';
+import { Panel } from '../../../shared/ui/panel';
 import { Esqueleto } from '../../../shared/ui/esqueleto';
 import { ToastService } from '../../../shared/ui/toast';
 import { TableroKanban } from '../../trabajos/tablero-kanban/tablero-kanban';
@@ -30,6 +31,7 @@ type Pestana = 'trabajos' | 'cotizacion';
     Pastilla,
     Boton,
     Confirmar,
+    Panel,
     Esqueleto,
     TableroKanban,
     FormularioTrabajo,

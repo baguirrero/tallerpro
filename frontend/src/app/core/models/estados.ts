@@ -1,4 +1,3 @@
-
 export const ESTADOS_ORDEN = [
   'RECIBIDA',
   'COTIZADA',
@@ -66,6 +65,12 @@ export const ETIQUETA_ESTADO_TRABAJO: Record<string, string> = {
   EN_PROCESO: 'En proceso',
   ESPERANDO_REPUESTO: 'Esperando repuesto',
   COMPLETADO: 'Completado',
+};
+
+export const ETIQUETA_PRIORIDAD: Record<string, string> = {
+  BAJA: 'Baja',
+  MEDIA: 'Media',
+  ALTA: 'Alta',
 };
 
 export const COLOR_ESTADO: Record<string, string> = {

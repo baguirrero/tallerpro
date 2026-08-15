@@ -5,7 +5,9 @@ import { Component, input, output } from '@angular/core';
   template: `
     <button
       class="b"
+      type="button"
       [class]="variante() + ' ' + tamano()"
+      [class.bloque]="bloque()"
       [disabled]="deshabilitado() || cargando()"
       (click)="pulsar.emit()"
     >
@@ -34,30 +36,62 @@ import { Component, input, output } from '@angular/core';
         border-color var(--dur-rapida) var(--ease-suave),
         transform var(--dur-rapida) var(--ease-salida);
     }
-    .b:active:not(:disabled) { transform: scale(0.97); }
-    .b:disabled { opacity: 0.55; cursor: not-allowed; }
+    .b:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .b:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .b.bloque {
+      display: flex;
+      width: 100%;
+    }
 
-    .md { font-size: var(--t-base); padding: var(--e2) var(--e4); min-height: 36px; }
-    .sm { font-size: var(--t-menor); padding: var(--e1) var(--e3); min-height: 28px; }
+    .md {
+      font-size: var(--t-base);
+      padding: var(--e2) var(--e4);
+      min-height: 36px;
+    }
+    .sm {
+      font-size: var(--t-menor);
+      padding: var(--e1) var(--e3);
+      min-height: 28px;
+    }
 
-    .primario { background: var(--acento); color: var(--acento-texto); }
-    .primario:hover:not(:disabled) { background: var(--acento-hover); }
+    .primario {
+      background: var(--acento);
+      color: var(--acento-texto);
+    }
+    .primario:hover:not(:disabled) {
+      background: var(--acento-hover);
+    }
 
     .secundario {
       background: var(--superficie);
       color: var(--texto-primario);
       border-color: var(--borde-fuerte);
     }
-    .secundario:hover:not(:disabled) { background: var(--superficie-hundida); }
+    .secundario:hover:not(:disabled) {
+      background: var(--superficie-hundida);
+    }
 
-    .fantasma { background: transparent; color: var(--texto-suave); }
+    .fantasma {
+      background: transparent;
+      color: var(--texto-suave);
+    }
     .fantasma:hover:not(:disabled) {
       background: var(--superficie-hundida);
       color: var(--texto-primario);
     }
 
-    .peligro { background: var(--peligro-fondo); color: var(--peligro-texto); }
-    .peligro:hover:not(:disabled) { filter: brightness(0.92); }
+    .peligro {
+      background: var(--peligro-fondo);
+      color: var(--peligro-texto);
+    }
+    .peligro:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
 
     .giro {
       width: 13px;
@@ -67,14 +101,35 @@ import { Component, input, output } from '@angular/core';
       border-radius: var(--r-full);
       animation: girar 700ms linear infinite;
     }
-    @keyframes girar { to { transform: rotate(360deg); } }
+    @keyframes girar {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   `,
 })
+/**
+ * El `type="button"` de la plantilla no es decorativo. Un `<button>` sin `type`
+ * dentro de un `<form>` es `submit` por omisión, así que «Cancelar» o
+ * «Corregir» enviaban el formulario en vez de hacer lo suyo. Quien quiera
+ * enviar lo hace desde `(pulsar)`, que es explícito.
+ */
 export class Boton {
   readonly variante = input<'primario' | 'secundario' | 'fantasma' | 'peligro'>('primario');
   readonly tamano = input<'sm' | 'md'>('md');
   readonly cargando = input<boolean>(false);
   readonly deshabilitado = input<boolean>(false);
+
+  /**
+   * Ocupa todo el ancho disponible. Lo pide la acción principal de una tarjeta
+   * de formulario —entrar, crear la cuenta—, donde un botón del ancho de su
+   * texto queda suelto en la caja.
+   *
+   * Es un input y no una clase del que lo usa porque el `<button>` vive dentro
+   * de esta plantilla: la encapsulación de Angular no deja alcanzarlo desde
+   * afuera, y llegar con `::ng-deep` sería peor que una línea de API.
+   */
+  readonly bloque = input<boolean>(false);
 
   readonly pulsar = output<void>();
 }

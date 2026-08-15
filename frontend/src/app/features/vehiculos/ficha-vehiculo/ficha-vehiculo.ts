@@ -4,14 +4,15 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 
 import { VehiculoService } from '../../../core/services/vehiculo';
 import { VehiculoConHistorial } from '../../../core/models/vehiculo.model';
-import { Spinner } from '../../../shared/components/spinner/spinner';
-import { BadgeEstado } from '../../../shared/components/badge-estado/badge-estado';
+import { Pastilla } from '../../../shared/ui/pastilla';
+import { Esqueleto } from '../../../shared/ui/esqueleto';
+import { EstadoVacio } from '../../../shared/ui/estado-vacio';
 
 @Component({
   selector: 'app-ficha-vehiculo',
-  imports: [RouterLink, CurrencyPipe, DatePipe, Spinner, BadgeEstado],
+  imports: [RouterLink, CurrencyPipe, DatePipe, Pastilla, Esqueleto, EstadoVacio],
   templateUrl: './ficha-vehiculo.html',
-  styles: ``,
+  styleUrl: './ficha-vehiculo.css',
 })
 export class FichaVehiculo implements OnInit {
   private readonly vehiculoService = inject(VehiculoService);

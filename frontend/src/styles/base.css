@@ -19,7 +19,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Esto lo sostenía el reboot de Bootstrap sin que nadie lo hubiera escrito, y
+ * apareció al retirarlo: los <p> recuperaron el margen del navegador y las
+ * listas su sangría de 40px. El espaciado lo decide cada pantalla, no el
+ * agente de usuario; la lista que sí quiere viñetas pide su propio padding.
+ */
+p,
+ul,
+ol,
+dl,
+figure,
+blockquote {
+  margin: 0;
+  padding: 0;
+}
 
 /*
  * Foco visible en todo lo enfocable. `:focus-visible` y no `:focus` para que el
@@ -32,7 +57,9 @@ h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 }
 
 /* Las cifras se alinean en columna: dinero, placas y correlativos. */
-.cifra { font-variant-numeric: tabular-nums; }
+.cifra {
+  font-variant-numeric: tabular-nums;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

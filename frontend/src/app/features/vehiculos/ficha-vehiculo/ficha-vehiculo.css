@@ -1,0 +1,87 @@
+.migas {
+  display: inline-block;
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+  text-decoration: none;
+  margin-bottom: var(--e2);
+}
+.migas:hover {
+  color: var(--acento);
+}
+
+.placa {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  color: var(--texto-primario);
+  margin-bottom: var(--e2);
+}
+
+.datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  font-size: var(--t-tabla);
+  color: var(--texto-suave);
+  margin-bottom: var(--e6);
+}
+/* El «/ ''» es el texto alternativo: sin él el lector de pantalla lee el punto
+   pegado al dato siguiente. */
+.datos > * + *::before {
+  content: '·' / '';
+  margin-right: var(--e3);
+  color: var(--borde-fuerte);
+}
+
+.panel {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-1);
+  overflow: hidden;
+}
+.panel-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--e3) var(--e4);
+  border-bottom: 1px solid var(--borde);
+}
+.conteo {
+  font-size: var(--t-menor);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-suave);
+  background: var(--superficie-hundida);
+  border-radius: var(--r-full);
+  padding: var(--e1) var(--e2);
+}
+
+.numero-orden {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-primario);
+  text-decoration: none;
+}
+.numero-orden:hover {
+  color: var(--acento);
+  text-decoration: underline;
+}
+
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+}
+.enlace:hover {
+  text-decoration: underline;
+}
+
+.bloque-error {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+  border: 1px solid var(--error-texto);
+  border-radius: var(--r-md);
+  padding: var(--e3) var(--e4);
+  margin-bottom: var(--e4);
+  font-size: var(--t-tabla);
+}

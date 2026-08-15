@@ -2,44 +2,34 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { ControlValueAccessor, NgControl } from '@angular/forms';
 import { mensajeDeError } from './errores';
 
-export interface Opcion {
-  valor: string;
-  texto: string;
-}
-
+/**
+ * El mismo envoltorio que `app-campo` con un `<textarea>` adentro. Existe
+ * porque hay dos campos que son prosa y no un renglón: la descripción del
+ * servicio y el comentario de un trabajo.
+ */
 @Component({
-  selector: 'app-select',
+  selector: 'app-area',
   template: `
     <label class="c">
       @if (etiqueta()) {
         <span class="et">{{ etiqueta() }}</span>
       }
 
-      <!--
-        La selección se marca opción por opción, no con un [value] en el select.
-        El select recibe su binding antes de que el @for haya creado las
-        opciones, así que el navegador descarta el valor y cae en la primera:
-        el control decía MEDIA y la pantalla mostraba Baja.
-      -->
-      <select
+      <textarea
         class="in"
         [class.mal]="!!textoError()"
+        [rows]="filas()"
+        [value]="valorMostrado()"
+        [placeholder]="marcador()"
         [disabled]="estaDeshabilitado()"
-        (change)="alElegir($any($event.target).value)"
+        (input)="alEscribir($any($event.target).value)"
         (blur)="alSalir()"
-      >
-        @if (marcador()) {
-          <option value="" [selected]="valorMostrado() === ''">{{ marcador() }}</option>
-        }
-        @for (opcion of opciones(); track opcion.valor) {
-          <option [value]="opcion.valor" [selected]="valorMostrado() === opcion.valor">
-            {{ opcion.texto }}
-          </option>
-        }
-      </select>
+      ></textarea>
 
       @if (textoError()) {
         <span class="msg mal-texto">{{ textoError() }}</span>
+      } @else if (ayuda()) {
+        <span class="msg">{{ ayuda() }}</span>
       }
     </label>
   `,
@@ -58,16 +48,19 @@ export interface Opcion {
     .in {
       font-family: var(--fuente);
       font-size: var(--t-base);
-      line-height: 1.4;
+      line-height: 1.5;
       color: var(--texto-primario);
       background: var(--superficie);
       border: 1px solid var(--borde-fuerte);
       border-radius: var(--r-sm);
       padding: var(--e2) var(--e3);
-      min-height: 36px;
       width: 100%;
-      cursor: pointer;
+      /* Vertical y nada más: a lo ancho rompería la rejilla del formulario. */
+      resize: vertical;
       transition: border-color var(--dur-rapida) var(--ease-suave);
+    }
+    .in::placeholder {
+      color: var(--texto-suave);
     }
     .in:hover:not(:disabled) {
       border-color: var(--texto-suave);
@@ -87,21 +80,22 @@ export interface Opcion {
 
     .msg {
       font-size: var(--t-menor);
-      color: var(--error-texto);
+      color: var(--texto-suave);
     }
     .mal-texto {
       color: var(--error-texto);
     }
   `,
 })
-export class Select implements ControlValueAccessor {
+export class Area implements ControlValueAccessor {
   /** Mismo mecanismo que `app-campo`; el porqué está explicado ahí. */
   private readonly ngControl = inject(NgControl, { optional: true, self: true });
 
   readonly etiqueta = input<string>('');
+  readonly ayuda = input<string>('');
   readonly error = input<string>('');
   readonly marcador = input<string>('');
-  readonly opciones = input<Opcion[]>([]);
+  readonly filas = input<number>(3);
   readonly valor = input<string>('');
   readonly deshabilitado = input<boolean>(false);
 
@@ -132,7 +126,7 @@ export class Select implements ControlValueAccessor {
     return mensajeDeError(control.errors);
   }
 
-  alElegir(valor: string): void {
+  alEscribir(valor: string): void {
     this.valorInterno.set(valor);
     this.alCambiar(valor);
     this.valorCambia.emit(valor);

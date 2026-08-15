@@ -32,7 +32,7 @@ Es monotaller (no hay multi-tenancy) y monomoneda (PEN, locale `es-PE`).
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | Angular 20 — standalone components, signals, rutas lazy, Bootstrap 5 |
+| Frontend | Angular 20 — standalone components, signals, rutas lazy, sistema de diseño propio |
 | Backend | NestJS 11 + TypeORM 1.x |
 | Base de datos | PostgreSQL 16 |
 | Auth | JWT firmado a mano (`@nestjs/jwt`) + bcrypt(10) + guards por rol |
@@ -231,11 +231,10 @@ src/app/
 │   └── services/      auth, token, tema, orden, trabajo, comentario, adjunto,
 │                      usuario, vehiculo
 ├── shared/
-│   ├── ui/            el sistema de diseño: botón, campo, select, pastilla,
-│   │                  prioridad, tarjeta, toast, esqueleto, estado vacío,
-│   │                  modal, confirmar
+│   ├── ui/            el sistema de diseño: botón, campo, área, select,
+│   │                  pastilla, prioridad, tarjeta, toast, esqueleto,
+│   │                  estado vacío, modal, panel, confirmar
 │   ├── shell/         barra lateral, topbar y cajón móvil
-│   └── components/    spinner, badge-estado (heredados; se retiran en la entrega C)
 └── features/          auth · dashboard · ordenes · trabajos · usuarios · perfil · ui
 ```
 
@@ -267,12 +266,20 @@ temario del curso. Desde la fase 2b hay un botón por destino válido —Iniciar
 ⏸ Esperar repuesto, Completar, ▶ Retomar, ← Reabrir—, generado a partir de la
 tabla de transiciones en vez de las flechas `◀ ▶` que recorrían el array.
 
-Las pantallas núcleo no usan Bootstrap ni los diálogos del navegador: eliminar
-una orden y cancelarla pasan por el modal propio, y el motivo de espera se pide
-con un campo dentro de un modal en vez de con `prompt()`. Queda un `confirm()` en
-`detalle-trabajo`, al borrar un adjunto, que se retira en la entrega C.
-`badge-estado` y `spinner` siguen existiendo porque cuatro pantallas todavía sin
-rediseñar los usan; se van con Bootstrap al cerrar la C.
+**TallerPro no usa Bootstrap.** Se retiró al cerrar la entrega C del rediseño,
+junto con `spinner` y `badge-estado`, que eran lo último que lo necesitaba. No
+queda ningún diálogo del navegador: `confirm()` y `prompt()` se reemplazaron por
+el modal propio.
+
+Los formularios usan **reactive forms**, y las primitivas de entrada
+—`app-campo`, `app-select`, `app-area`— son `ControlValueAccessor`, así que
+aceptan `formControlName`. También andan sueltas con `valor` / `valorCambia`,
+que es como las usa el editor de repuestos de la cotización. Los mensajes de
+validación salen de `shared/ui/errores.ts`, en un solo sitio.
+
+El **detalle de un trabajo** vive en un panel lateral que se hospeda en el
+detalle de orden, fuera del `@if` de la pestaña: flota sobre la pantalla y no
+pertenece a ninguna de las dos.
 
 ---
 
@@ -301,8 +308,26 @@ Cosas que sorprenden si no se saben:
 - **Los `@import` de `styles.css` van primeros**, sin nada delante. En CSS solo
   `@charset` y `@layer` pueden precederlos: con un `@font-face` arriba, el navegador
   los descarta en silencio y los tokens no llegan al bundle.
-- **Bootstrap y el sistema propio conviven** hasta que la entrega C del rediseño
-  termine. La regla es que un componente usa uno u otro, nunca los dos.
+- **Un `ControlValueAccessor` que necesita leer su propio control no provee
+  `NG_VALUE_ACCESSOR`.** Inyecta `NgControl` con `self` y se asigna
+  `valueAccessor` a mano en el constructor. Hacer las dos cosas es una
+  dependencia circular, y proveer solo el token deja al componente sin forma de
+  saber si está tocado ni qué error tiene.
+- **`app-select` marca la selección opción por opción, no con un `[value]` en el
+  `<select>`.** El binding del select se aplica antes de que el `@for` haya
+  creado las opciones, así que el navegador lo descarta y cae en la primera: el
+  formulario de trabajo mostraba «Baja» mientras el control valía `MEDIA`.
+- **`app-campo` entrega texto aunque el tipo sea `number`.** El DOM no tiene
+  números; el `@IsNumber()`/`@IsInt()` de la API rechaza la cadena. La conversión
+  va al armar el payload, no en la primitiva —así lo hace también el editor de
+  repuestos, que guarda cadenas y llama a `Number()` en el borde.
+- **`app-panel` no lleva `transform` estático.** Un elemento con transform es
+  bloque contenedor de sus descendientes `position: fixed`, y el modal de
+  confirmación que se abre desde adentro quedaría recortado dentro del panel.
+- **El reset de `styles/base.css` cubre lo que sostenía el reboot de Bootstrap.**
+  Al retirarlo volvieron los estilos del navegador: los `<p>` recuperaron su
+  margen y las listas su sangría de 40px. `p, ul, ol, dl, figure, blockquote`
+  van a `margin: 0; padding: 0`, y la lista que quiere viñetas pide su padding.
 - **La ruta `/ui` es el catálogo de componentes**, y es donde se verifica el sistema
   de diseño en ambos temas.
 - **La máquina de estados del trabajo vive en el backend.** `transiciones.ts`
