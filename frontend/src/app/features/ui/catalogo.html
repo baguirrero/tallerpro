@@ -73,6 +73,15 @@
       [valor]="estadoElegido()"
       (valorCambia)="estadoElegido.set($event)"
     ></app-select>
+
+    <app-area
+      etiqueta="Descripción del servicio"
+      marcador="Detalle del trabajo solicitado por el cliente"
+      ayuda="Se puede estirar hacia abajo"
+      [filas]="3"
+      [valor]="descripcion()"
+      (valorCambia)="descripcion.set($event)"
+    ></app-area>
   </div>
 </div>
 
@@ -119,7 +128,11 @@
   </div>
 </div>
 
-<app-modal [abierto]="modalAbierto()" titulo="Detalle del trabajo" (cerrar)="modalAbierto.set(false)">
+<app-modal
+  [abierto]="modalAbierto()"
+  titulo="Detalle del trabajo"
+  (cerrar)="modalAbierto.set(false)"
+>
   <p style="margin: 0">Cambio de embrague · Kia Rio · MAN123</p>
   <div pie>
     <app-boton variante="fantasma" (pulsar)="modalAbierto.set(false)">Cerrar</app-boton>

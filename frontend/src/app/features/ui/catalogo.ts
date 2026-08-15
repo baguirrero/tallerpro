@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Area } from '../../shared/ui/area';
 import { Boton } from '../../shared/ui/boton';
 import { Campo } from '../../shared/ui/campo';
 import { Confirmar } from '../../shared/ui/confirmar';
@@ -14,12 +15,29 @@ import { ToastService } from '../../shared/ui/toast';
 @Component({
   selector: 'app-catalogo',
   imports: [
-    Boton, Campo, Confirmar, Esqueleto, EstadoVacio, Modal, Pastilla, Prioridad, Select, Tarjeta,
+    Area,
+    Boton,
+    Campo,
+    Confirmar,
+    Esqueleto,
+    EstadoVacio,
+    Modal,
+    Pastilla,
+    Prioridad,
+    Select,
+    Tarjeta,
   ],
   templateUrl: './catalogo.html',
   styles: `
-    .grupo { margin-bottom: var(--e8); }
-    .muestra { display: flex; flex-wrap: wrap; gap: var(--e3); align-items: center; }
+    .grupo {
+      margin-bottom: var(--e8);
+    }
+    .muestra {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--e3);
+      align-items: center;
+    }
   `,
 })
 export class Catalogo {
@@ -39,6 +57,7 @@ export class Catalogo {
   readonly confirmarAbierto = signal<boolean>(false);
 
   readonly placa = signal<string>('');
+  readonly descripcion = signal<string>('');
   readonly estadoElegido = signal<string>('');
 
   readonly opcionesEstado = signal([
