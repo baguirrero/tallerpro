@@ -1,0 +1,65 @@
+/*
+ * No hay envoltorio de pantalla: `.sin-sesion` de app.css ya centra y pinta el
+ * fondo para las dos únicas rutas que viven fuera del shell. Repetirlo acá
+ * duplicaría el relleno y el alto.
+ */
+.caja {
+  width: 100%;
+  max-width: 420px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-2);
+  padding: var(--e6);
+}
+
+.marca {
+  text-align: center;
+  margin-bottom: var(--e6);
+}
+.marca-nombre {
+  font-size: var(--t-h1);
+  font-weight: 600;
+  color: var(--texto-primario);
+}
+.marca-bajada {
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+}
+
+.campos {
+  display: grid;
+  gap: var(--e4);
+  margin-bottom: var(--e6);
+}
+/* El registro tiene nombres y apellidos, que caben en una fila. */
+.par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e4);
+}
+@media (max-width: 480px) {
+  .par {
+    grid-template-columns: 1fr;
+  }
+}
+
+.acciones {
+  display: grid;
+  gap: var(--e3);
+}
+
+.pie-caja {
+  margin-top: var(--e4);
+  text-align: center;
+  font-size: var(--t-menor);
+  color: var(--texto-suave);
+}
+.enlace {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 600;
+}
+.enlace:hover {
+  text-decoration: underline;
+}
