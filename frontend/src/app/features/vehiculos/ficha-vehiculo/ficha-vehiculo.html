@@ -1,63 +1,65 @@
-@if (mensajeError()) {
-  <div class="alert alert-danger">{{ mensajeError() }}</div>
-  <a class="btn btn-outline-secondary" routerLink="/ordenes">Volver al listado</a>
-}
-
 @if (cargando()) {
-  <app-spinner></app-spinner>
+  <app-esqueleto variante="texto" [repeticiones]="3"></app-esqueleto>
+} @else if (mensajeError()) {
+  <div class="bloque-error">{{ mensajeError() }}</div>
+  <a class="enlace" routerLink="/ordenes">← Volver al listado</a>
 } @else if (vehiculo(); as datos) {
-  <div class="card shadow-sm mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span class="fw-bold fs-5">{{ datos.placa }}</span>
-      <a class="btn btn-sm btn-outline-secondary" routerLink="/ordenes">Volver</a>
+  <a class="migas" routerLink="/ordenes">← Órdenes</a>
+
+  <h1 class="placa">{{ datos.placa }}</h1>
+
+  <p class="datos">
+    <span>{{ datos.marca }} {{ datos.modelo }}</span>
+    @if (datos.anio) {
+      <span>{{ datos.anio }}</span>
+    }
+    <span>{{ datos.propietario_nombre }}</span>
+    <span>{{ datos.propietario_telefono }}</span>
+  </p>
+
+  <div class="panel">
+    <div class="panel-cab">
+      <span class="etiqueta">Historial</span>
+      <span class="conteo">{{ datos.ordenes.length }}</span>
     </div>
 
-    <div class="card-body row">
-      <div class="col-md-6">
-        <h6 class="text-muted">Vehículo</h6>
-        <p class="mb-1"><strong>{{ datos.marca }} {{ datos.modelo }}</strong></p>
-        @if (datos.anio) {
-          <p class="mb-0 small">Año: {{ datos.anio }}</p>
-        }
-      </div>
-      <div class="col-md-6">
-        <h6 class="text-muted">Propietario</h6>
-        <p class="mb-1"><strong>{{ datos.propietario_nombre }}</strong></p>
-        <p class="mb-0 small">Teléfono: {{ datos.propietario_telefono }}</p>
-      </div>
-    </div>
-  </div>
-
-  <h5 class="mb-3">Historial ({{ datos.ordenes.length }})</h5>
-
-  @if (datos.ordenes.length === 0) {
-    <p class="text-muted">Este vehículo todavía no tiene órdenes.</p>
-  } @else {
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Orden</th>
-            <th>Ingreso</th>
-            <th>Servicio</th>
-            <th>Aprobado</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (orden of datos.ordenes; track orden.id) {
+    @if (datos.ordenes.length === 0) {
+      <app-estado-vacio
+        icono="📋"
+        titulo="Sin órdenes todavía"
+        mensaje="Cuando este vehículo entre al taller, su orden aparecerá acá."
+      ></app-estado-vacio>
+    } @else {
+      <div class="tabla-envoltura">
+        <table class="tabla">
+          <thead>
             <tr>
-              <td><a [routerLink]="['/ordenes', orden.id]">{{ orden.numero_orden }}</a></td>
-              <td>{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ orden.descripcion }}</td>
-              <td>
-                {{ orden.totales.aprobado | currency: 'PEN' }}
-              </td>
-              <td><app-badge-estado [estado]="orden.estado"></app-badge-estado></td>
+              <th>Orden</th>
+              <th class="num">Ingreso</th>
+              <th>Servicio</th>
+              <th class="num">Aprobado</th>
+              <th>Estado</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
+          </thead>
+          <tbody>
+            @for (orden of datos.ordenes; track orden.id) {
+              <tr>
+                <td>
+                  <a class="numero-orden" [routerLink]="['/ordenes', orden.id]">
+                    {{ orden.numero_orden }}
+                  </a>
+                </td>
+                <td class="num">{{ orden.fecha_ingreso | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+                <td>{{ orden.descripcion }}</td>
+                <td class="num">
+                  {{ orden.totales.aprobado | currency: 'PEN' : 'symbol-narrow' }}
+                </td>
+                <td><app-pastilla [estado]="orden.estado"></app-pastilla></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
 }
