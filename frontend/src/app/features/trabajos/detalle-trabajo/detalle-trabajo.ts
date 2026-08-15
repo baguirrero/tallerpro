@@ -1,4 +1,5 @@
-import { Component, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 
@@ -41,9 +42,29 @@ export class DetalleTrabajo {
   readonly nombreArchivo = signal<string>('');
   readonly adjuntoAEliminar = signal<Adjunto | null>(null);
 
+  /**
+   * El comentario **no lleva `required`**, y es a propósito. Un campo obligatorio
+   * es el que hay que llenar para poder enviar el formulario; esto es la caja de
+   * una acción opcional, y marcarla en rojo por dejarla vacía —cosa que pasaba
+   * con solo mover el foco, por ejemplo al abrir el modal de borrar un adjunto—
+   * es regañar a alguien que no pidió nada. Que haga falta texto lo dice el
+   * botón, que está apagado hasta que lo hay.
+   *
+   * `maxLength` sí se queda: ahí el error es accionable, porque hay algo escrito
+   * que sobra.
+   */
   readonly formularioComentario = this.fb.nonNullable.group({
-    contenido: ['', [Validators.required, Validators.maxLength(1000)]],
+    contenido: ['', [Validators.maxLength(1000)]],
   });
+
+  private readonly textoComentario = toSignal(
+    this.formularioComentario.controls.contenido.valueChanges,
+    {
+      initialValue: '',
+    },
+  );
+
+  readonly hayComentarioQueEnviar = computed(() => this.textoComentario().trim().length > 0);
 
   constructor() {
     effect(() => {
@@ -75,10 +96,12 @@ export class DetalleTrabajo {
       return;
     }
 
+    // El botón ya está apagado sin texto; esto cubre el envío por otro camino.
+    const contenido = this.formularioComentario.getRawValue().contenido.trim();
+    if (!contenido) return;
+
     this.enviandoComentario.set(true);
     this.mensajeError.set(null);
-
-    const contenido = this.formularioComentario.getRawValue().contenido;
 
     this.comentarioService.crear(this.trabajo().id, contenido).subscribe({
       next: (comentarioNuevo) => {

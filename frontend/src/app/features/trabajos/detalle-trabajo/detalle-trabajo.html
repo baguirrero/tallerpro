@@ -33,6 +33,7 @@
       <app-boton
         variante="primario"
         tamano="sm"
+        [deshabilitado]="!hayComentarioQueEnviar()"
         [cargando]="enviandoComentario()"
         (pulsar)="enviarComentario()"
       >
