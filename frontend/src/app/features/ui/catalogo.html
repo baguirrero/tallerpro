@@ -124,6 +124,7 @@
   <span class="etiqueta">Diálogos</span>
   <div class="muestra" style="margin-top: var(--e3)">
     <app-boton variante="secundario" (pulsar)="modalAbierto.set(true)">Abrir modal</app-boton>
+    <app-boton variante="secundario" (pulsar)="panelAbierto.set(true)">Abrir panel</app-boton>
     <app-boton variante="peligro" (pulsar)="confirmarAbierto.set(true)">Eliminar orden</app-boton>
   </div>
 </div>
@@ -138,6 +139,17 @@
     <app-boton variante="fantasma" (pulsar)="modalAbierto.set(false)">Cerrar</app-boton>
   </div>
 </app-modal>
+
+<app-panel
+  [abierto]="panelAbierto()"
+  titulo="Cambio de aceite y filtro"
+  (cerrar)="panelAbierto.set(false)"
+>
+  <p style="margin: 0">Acá van los comentarios y los adjuntos del trabajo.</p>
+  <div pie>
+    <app-boton variante="fantasma" (pulsar)="panelAbierto.set(false)">Cerrar</app-boton>
+  </div>
+</app-panel>
 
 <app-confirmar
   [abierto]="confirmarAbierto()"

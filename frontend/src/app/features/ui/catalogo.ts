@@ -6,6 +6,7 @@ import { Confirmar } from '../../shared/ui/confirmar';
 import { Esqueleto } from '../../shared/ui/esqueleto';
 import { EstadoVacio } from '../../shared/ui/estado-vacio';
 import { Modal } from '../../shared/ui/modal';
+import { Panel } from '../../shared/ui/panel';
 import { Pastilla } from '../../shared/ui/pastilla';
 import { Prioridad } from '../../shared/ui/prioridad';
 import { Select } from '../../shared/ui/select';
@@ -22,6 +23,7 @@ import { ToastService } from '../../shared/ui/toast';
     Esqueleto,
     EstadoVacio,
     Modal,
+    Panel,
     Pastilla,
     Prioridad,
     Select,
@@ -55,6 +57,7 @@ export class Catalogo {
 
   readonly modalAbierto = signal<boolean>(false);
   readonly confirmarAbierto = signal<boolean>(false);
+  readonly panelAbierto = signal<boolean>(false);
 
   readonly placa = signal<string>('');
   readonly descripcion = signal<string>('');
