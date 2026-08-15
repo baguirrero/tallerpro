@@ -143,7 +143,11 @@ export class FormularioOrden implements OnInit {
     };
     if (actualizarVehiculo) datos.actualizar_vehiculo = true;
     if (valores.fecha_entrega) datos.fecha_entrega = valores.fecha_entrega;
-    if (valores.anio) datos.anio = valores.anio;
+    // El DOM solo tiene texto, así que `app-campo` deja "2022" en el control
+    // aunque el tipo sea number, y el @IsInt() de la API rechaza la cadena. La
+    // conversión va acá, en el borde.
+    const anio = `${valores.anio ?? ''}`.trim();
+    if (anio !== '') datos.anio = Number(anio);
 
     const id = this.ordenId();
     if (id) {

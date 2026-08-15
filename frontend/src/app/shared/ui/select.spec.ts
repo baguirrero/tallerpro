@@ -18,6 +18,19 @@ class Anfitrion {
   readonly control = new FormControl('', { nonNullable: true, validators: [Validators.required] });
 }
 
+@Component({
+  imports: [ReactiveFormsModule, Select],
+  template: `<app-select [opciones]="opciones" [formControl]="control"></app-select>`,
+})
+class AnfitrionConValorPrevio {
+  readonly opciones = [
+    { valor: 'BAJA', texto: 'Baja' },
+    { valor: 'MEDIA', texto: 'Media' },
+    { valor: 'ALTA', texto: 'Alta' },
+  ];
+  readonly control = new FormControl('MEDIA', { nonNullable: true });
+}
+
 describe('Select como ControlValueAccessor', () => {
   function montar() {
     const fixture = TestBed.createComponent(Anfitrion);
@@ -31,6 +44,20 @@ describe('Select como ControlValueAccessor', () => {
     fixture.componentInstance.control.setValue('ALTA');
     fixture.detectChanges();
     expect(select.value).toBe('ALTA');
+  });
+
+  /**
+   * El caso que se escapaba: los tests anteriores llamaban a `setValue` con las
+   * opciones ya dibujadas. Un control que **llega** con valor se resolvía en el
+   * primer render, cuando el `@for` todavía no había creado las opciones, y el
+   * desplegable mostraba la primera mientras el formulario guardaba la otra.
+   */
+  it('un valor que ya venía en el control queda seleccionado en el primer render', () => {
+    const fixture = TestBed.createComponent(AnfitrionConValorPrevio);
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select');
+    expect(select.value).toBe('MEDIA');
+    expect(select.options[select.selectedIndex].textContent?.trim()).toBe('Media');
   });
 
   it('elegir una opción actualiza el control', () => {

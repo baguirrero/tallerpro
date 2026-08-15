@@ -15,19 +15,26 @@ export interface Opcion {
         <span class="et">{{ etiqueta() }}</span>
       }
 
+      <!--
+        La selección se marca opción por opción, no con un [value] en el select.
+        El select recibe su binding antes de que el @for haya creado las
+        opciones, así que el navegador descarta el valor y cae en la primera:
+        el control decía MEDIA y la pantalla mostraba Baja.
+      -->
       <select
         class="in"
         [class.mal]="!!textoError()"
-        [value]="valorMostrado()"
         [disabled]="estaDeshabilitado()"
         (change)="alElegir($any($event.target).value)"
         (blur)="alSalir()"
       >
         @if (marcador()) {
-          <option value="">{{ marcador() }}</option>
+          <option value="" [selected]="valorMostrado() === ''">{{ marcador() }}</option>
         }
         @for (opcion of opciones(); track opcion.valor) {
-          <option [value]="opcion.valor">{{ opcion.texto }}</option>
+          <option [value]="opcion.valor" [selected]="valorMostrado() === opcion.valor">
+            {{ opcion.texto }}
+          </option>
         }
       </select>
 
