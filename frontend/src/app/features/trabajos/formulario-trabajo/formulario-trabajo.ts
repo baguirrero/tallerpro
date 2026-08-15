@@ -1,31 +1,48 @@
-import { Component, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { TrabajoService } from '../../../core/services/trabajo';
 import { UsuarioService } from '../../../core/services/usuario';
 import { Mecanico } from '../../../core/models/usuario.model';
-import { PRIORIDADES } from '../../../core/models/estados';
+import { ETIQUETA_PRIORIDAD, PRIORIDADES } from '../../../core/models/estados';
+import { Campo } from '../../../shared/ui/campo';
+import { Select, Opcion } from '../../../shared/ui/select';
+import { Boton } from '../../../shared/ui/boton';
+import { Tarjeta } from '../../../shared/ui/tarjeta';
+import { ToastService } from '../../../shared/ui/toast';
 
 @Component({
   selector: 'app-formulario-trabajo',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Campo, Select, Boton, Tarjeta],
   templateUrl: './formulario-trabajo.html',
-  styles: ``,
+  styleUrl: './formulario-trabajo.css',
 })
 export class FormularioTrabajo implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly trabajoService = inject(TrabajoService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly toast = inject(ToastService);
 
   readonly ordenId = input.required<string>();
 
   readonly trabajoCreado = output<void>();
 
   readonly guardando = signal<boolean>(false);
-  readonly mensajeError = signal<string | null>(null);
   readonly mecanicos = signal<Mecanico[]>([]);
 
-  readonly prioridades = PRIORIDADES;
+  readonly opcionesPrioridad = computed<Opcion[]>(() =>
+    PRIORIDADES.map((prioridad) => ({
+      valor: prioridad,
+      texto: ETIQUETA_PRIORIDAD[prioridad] ?? prioridad,
+    })),
+  );
+
+  readonly opcionesMecanicos = computed<Opcion[]>(() =>
+    this.mecanicos().map((mecanico) => ({
+      valor: mecanico.id,
+      texto: `${mecanico.nombres} ${mecanico.apellidos}`,
+    })),
+  );
 
   readonly formulario = this.fb.nonNullable.group({
     titulo: ['', [Validators.required, Validators.minLength(4)]],
@@ -54,7 +71,6 @@ export class FormularioTrabajo implements OnInit {
     }
 
     this.guardando.set(true);
-    this.mensajeError.set(null);
 
     const valores = this.formulario.getRawValue();
 
@@ -63,10 +79,11 @@ export class FormularioTrabajo implements OnInit {
       prioridad: valores.prioridad,
       orden_id: this.ordenId(),
     };
-    // null y undefined son "sin cotizar"; 0 sí es un precio.
-    if (valores.precio_mano_obra !== null && valores.precio_mano_obra !== undefined) {
-      datos.precio_mano_obra = valores.precio_mano_obra;
-    }
+    // El DOM solo tiene texto, así que `app-campo` deja "150" en el control aunque
+    // el tipo sea number, y el @IsNumber() de la API rechaza la cadena. La
+    // conversión va acá, en el borde. Vacío es "sin cotizar"; 0 sí es un precio.
+    const precio = `${valores.precio_mano_obra ?? ''}`.trim();
+    if (precio !== '') datos.precio_mano_obra = Number(precio);
     if (valores.descripcion) datos.descripcion = valores.descripcion;
     if (valores.fecha_limite) datos.fecha_limite = valores.fecha_limite;
     if (valores.asignado_a_id) datos.asignado_a_id = valores.asignado_a_id;
@@ -75,20 +92,16 @@ export class FormularioTrabajo implements OnInit {
       next: () => {
         this.guardando.set(false);
         this.formulario.reset({ prioridad: 'MEDIA' });
+        this.toast.exito('Se agregó el trabajo');
         this.trabajoCreado.emit();
       },
       error: (error) => {
         this.guardando.set(false);
         const mensaje = error.error?.message;
-        this.mensajeError.set(
+        this.toast.error(
           Array.isArray(mensaje) ? mensaje.join('. ') : (mensaje ?? 'No se pudo crear el trabajo'),
         );
       },
     });
-  }
-
-  tieneError(campo: string, tipoError: string): boolean {
-    const control = this.formulario.get(campo);
-    return !!control && control.hasError(tipoError) && control.touched;
   }
 }
