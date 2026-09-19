@@ -226,7 +226,8 @@ Colección ejecutable en `docs/endpoints.http` (extensión REST Client).
 src/app/
 ├── core/
 │   ├── guards/        authGuard (token presente), rolesGuard (data.roles)
-│   ├── interceptors/  jwtInterceptor — añade Bearer solo a environment.apiUrl
+│   ├── interceptors/  jwtInterceptor — añade Bearer solo a environment.apiUrl;
+│   │                  un 401 cierra la sesión (ver §7)
 │   ├── models/        interfaces + constantes de estados, etiquetas y colores
 │   └── services/      auth, token, tema, orden, trabajo, comentario, adjunto,
 │                      usuario, vehiculo
@@ -330,6 +331,16 @@ Cosas que sorprenden si no se saben:
   van a `margin: 0; padding: 0`, y la lista que quiere viñetas pide su padding.
 - **La ruta `/ui` es el catálogo de componentes**, y es donde se verifica el sistema
   de diseño en ambos temas.
+- **Un `401` cierra la sesión en el interceptor, salvo el del login.** El login
+  responde `401` a las credenciales equivocadas y eso lo muestra el formulario.
+  Para cualquier otra petición, el interceptor limpia la sesión, avisa una vez y
+  manda al login con `returnUrl`. La petición se completa **sin error**, así que
+  el `error:` de quien la hizo no corre; es a propósito, para que cada pantalla no
+  sume su mensaje al aviso de sesión. Solo actúa si el token rechazado sigue
+  siendo el vigente: de las peticiones que fallan juntas cuando vence, avisa la
+  primera, y una respuesta tardía de un token viejo no cierra una sesión nueva.
+  El guard, en cambio, solo mira que haya token, no si venció: quien vuelve al
+  día siguiente entra y es la primera petición la que lo lleva al login.
 - **La máquina de estados del trabajo vive en el backend.** `transiciones.ts`
   declara seis aristas y `PATCH /trabajos/:id/estado` responde `409` ante
   cualquier otra. El frontend duplica la tabla en `core/models/estados.ts` solo
@@ -422,8 +433,6 @@ obligatorias.
   que ya trajo, y hoy eso es todo. El día que se pagine dejará de encontrar lo que
   no esté en la página actual, así que hay que moverlo al servidor en la misma
   tanda. El contador «3 de 52» es lo que lo delata.
-- El interceptor no reacciona al `401`: el token vence y la app sigue mostrando
-  errores hasta que se recarga.
 - Sin Swagger, sin health check, sin logging estructurado.
 
 ---
